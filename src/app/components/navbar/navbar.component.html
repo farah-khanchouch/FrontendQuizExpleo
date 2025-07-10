@@ -1,0 +1,27 @@
+<nav class="navbar">
+      <div class="navbar-container">
+        <div class="navbar-brand">
+          <div class="logo">🎯</div>
+          <span>Expleo Quiz</span>
+        </div>
+
+        <div class="navbar-menu">
+          <a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
+          <a routerLink="/quizzes" routerLinkActive="active">Quiz</a>
+          <div *ngIf="user?.role === 'admin'" class="admin-section">
+            <a href="#" class="admin-link">Administration</a>
+          </div>
+        </div>
+
+        <div class="navbar-user" *ngIf="user">
+          <div class="user-info">
+            <div class="user-avatar">{{ user.avatar }}</div>
+            <div class="user-details">
+              <span class="user-name">{{ user.username }}</span>
+              <span class="user-points">{{ user.totalPoints }} pts</span>
+            </div>
+          </div>
+          <button (click)="logout()" class="logout-btn">Déconnexion</button>
+        </div>
+      </div>
+    </nav>

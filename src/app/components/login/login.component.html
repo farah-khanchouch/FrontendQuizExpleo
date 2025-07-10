@@ -1,0 +1,53 @@
+<div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="logo">
+            <div class="logo-icon">🎯</div>
+            <h1>Expleo Quiz</h1>
+          </div>
+          <p class="tagline">Boostez vos compétences avec nos quiz interactifs !</p>
+        </div>
+
+        <form (ngSubmit)="onLogin()" class="login-form">
+          <div class="form-group">
+            <label for="email">Nom d'utilisateur</label>
+            <input 
+              type="text" 
+              id="email" 
+              [(ngModel)]="email" 
+              name="email"
+              placeholder="Entrez votre nom d'utilisateur"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input 
+              type="password" 
+              id="password" 
+              [(ngModel)]="password" 
+              name="password"
+              placeholder="Entrez votre mot de passe"
+              required
+            >
+          </div>
+
+          <button 
+            type="submit" 
+            class="login-btn"
+            [disabled]="isLoading"
+          >
+            <span *ngIf="!isLoading">Se connecter</span>
+            <span *ngIf="isLoading" class="loading">🔄 Connexion...</span>
+          </button>
+
+          <div *ngIf="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+        </form>
+
+        
+      </div>
+    </div>
+ 

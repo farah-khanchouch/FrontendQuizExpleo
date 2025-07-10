@@ -1,0 +1,97 @@
+<div class="quiz-list">
+      <app-navbar></app-navbar>
+      
+      <div class="quiz-container">
+        <div class="header-section">
+          <h1>🎯 Découvrez nos Quiz</h1>
+          <p class="subtitle">
+            Choisissez parmi nos quiz thématiques et testez vos connaissances de manière ludique !
+          </p>
+        </div>
+
+        <div class="filters-section">
+          <div class="filter-buttons">
+            <button 
+              (click)="filterByTheme('')" 
+              [class.active]="selectedTheme === ''"
+              class="filter-btn all"
+            >
+              Tous ({{ quizzes.length }})
+            </button>
+            <button 
+              (click)="filterByTheme('technique')" 
+              [class.active]="selectedTheme === 'technique'"
+              class="filter-btn technique"
+            >
+              💻 Technique ({{ getQuizCountByTheme('technique') }})
+            </button>
+            <button 
+              (click)="filterByTheme('culture')" 
+              [class.active]="selectedTheme === 'culture'"
+              class="filter-btn culture"
+            >
+              🏢 Culture ({{ getQuizCountByTheme('culture') }})
+            </button>
+            <button 
+              (click)="filterByTheme('ludique')" 
+              [class.active]="selectedTheme === 'ludique'"
+              class="filter-btn ludique"
+            >
+              🎉 Ludique ({{ getQuizCountByTheme('ludique') }})
+            </button>
+          </div>
+        </div>
+
+        <div class="loading" *ngIf="isLoading">
+          <div class="spinner">🔄</div>
+          <p>Chargement des quiz...</p>
+        </div>
+
+        <div class="quizzes-grid" *ngIf="!isLoading">
+          <div *ngFor="let quiz of filteredQuizzes" class="quiz-card">
+            <div class="quiz-image">
+              <img [src]="quiz.imageUrl" [alt]="quiz.title" />
+              <div class="quiz-badge" [class]="quiz.theme">
+                {{ getThemeIcon(quiz.theme) }} {{ getThemeLabel(quiz.theme) }}
+              </div>
+            </div>
+            
+            <div class="quiz-content">
+              <h3>{{ quiz.title }}</h3>
+              <p class="quiz-description">{{ quiz.description }}</p>
+              
+              <div class="quiz-meta">
+                <div class="meta-item">
+                  <span class="meta-icon">⏱️</span>
+                  <span>{{ quiz.duration }} min</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-icon">📊</span>
+                  <span>{{ quiz.difficulty }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-icon">🏆</span>
+                  <span>{{ quiz.points }} pts</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-icon">❓</span>
+                  <span>{{ quiz.questions.length }} questions</span>
+                </div>
+              </div>
+
+              <div class="quiz-actions">
+                <button [routerLink]="['/quiz', quiz.id]" class="start-btn">
+                  Commencer le Quiz
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoading && filteredQuizzes.length === 0">
+          <div class="empty-icon">🔍</div>
+          <h3>Aucun quiz trouvé</h3>
+          <p>Aucun quiz ne correspond à votre sélection actuelle.</p>
+        </div>
+      </div>
+    </div>

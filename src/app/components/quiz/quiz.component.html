@@ -1,0 +1,114 @@
+<div class="quiz-page">
+      <app-navbar></app-navbar>
+      
+      <div class="quiz-container" *ngIf="quiz && !isLoading">
+        <div class="quiz-header">
+          <div class="quiz-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
+            </div>
+            <div class="progress-text">
+              Question {{ currentQuestionIndex + 1 }} sur {{ quiz.questions.length }}
+            </div>
+          </div>
+          
+          <div class="quiz-info">
+            <h1>{{ quiz.title }}</h1>
+            <div class="quiz-stats">
+              <span class="stat">⏱️ {{ quiz.duration }} min</span>
+              <span class="stat">🏆 {{ quiz.points }} pts</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-section">
+          <div class="question-card">
+            <div class="question-header">
+              <h2>{{ currentQuestion.question }}</h2>
+              <div class="question-points">{{ currentQuestion.points }} pts</div>
+            </div>
+
+            <div class="answers-grid">
+              <div 
+                *ngFor="let option of currentQuestion.options; let i = index"
+                class="answer-option"
+                [class.selected]="selectedAnswer === option"
+                [class.correct]="showResult && option === currentQuestion.correctAnswer"
+                [class.incorrect]="showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer"
+                (click)="selectAnswer(option)"
+              >
+                <div class="option-letter">{{ getOptionLetter(i) }}</div>
+                <div class="option-text">{{ option }}</div>
+                <div class="option-feedback" *ngIf="showResult">
+                  <span *ngIf="option === currentQuestion.correctAnswer" class="correct-icon">✅</span>
+                  <span *ngIf="selectedAnswer === option && option !== currentQuestion.correctAnswer" class="incorrect-icon">❌</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="explanation" *ngIf="showResult && currentQuestion.explanation">
+              <div class="explanation-header">💡 Explication</div>
+              <p>{{ currentQuestion.explanation }}</p>
+            </div>
+          </div>
+
+          <div class="question-actions">
+            <button 
+              *ngIf="!showResult"
+              (click)="submitAnswer()" 
+              [disabled]="!selectedAnswer"
+              class="submit-btn"
+            >
+              Valider la réponse
+            </button>
+            
+            <button 
+              *ngIf="showResult && !isLastQuestion()"
+              (click)="nextQuestion()" 
+              class="next-btn"
+            >
+              Question suivante
+            </button>
+            
+            <button 
+              *ngIf="showResult && isLastQuestion()"
+              (click)="finishQuiz()" 
+              class="finish-btn"
+            >
+              Terminer le quiz
+            </button>
+          </div>
+        </div>
+
+        <div class="quiz-sidebar">
+          <div class="score-card">
+            <h3>Votre score</h3>
+            <div class="score-display">
+              <div class="score-number">{{ score }}</div>
+              <div class="score-label">/ {{ quiz.points }}</div>
+            </div>
+          </div>
+
+          <div class="questions-overview">
+            <h3>Questions</h3>
+            <div class="questions-grid">
+              <div 
+                *ngFor="let question of quiz.questions; let i = index"
+                class="question-bubble"
+                [class.current]="i === currentQuestionIndex"
+                [class.completed]="answers[question.id] !== undefined"
+                [class.correct]="answers[question.id] === question.correctAnswer"
+                [class.incorrect]="answers[question.id] !== undefined && answers[question.id] !== question.correctAnswer"
+              >
+                {{ i + 1 }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading" *ngIf="isLoading">
+        <div class="spinner">🔄</div>
+        <p>Chargement du quiz...</p>
+      </div>
+    </div>

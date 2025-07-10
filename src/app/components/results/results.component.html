@@ -1,0 +1,114 @@
+<div class="results-page">
+      <app-navbar></app-navbar>
+      
+      <div class="results-container" *ngIf="quiz">
+        <div class="results-header">
+          <div class="celebration-animation">
+            <div class="confetti">🎉</div>
+            <div class="confetti">🎊</div>
+            <div class="confetti">✨</div>
+            <div class="confetti">🌟</div>
+          </div>
+          
+          <h1 class="results-title">Quiz Terminé !</h1>
+          <p class="quiz-name">{{ quiz.title }}</p>
+        </div>
+
+        <div class="results-content">
+          <div class="score-section">
+            <div class="score-card">
+              <div class="score-header">
+                <h2>Votre Score</h2>
+                <div class="score-emoji">{{ getScoreEmoji() }}</div>
+              </div>
+              
+              <div class="score-display">
+                <div class="score-circle">
+                  <div class="score-text">
+                    <span class="score-number">{{ scorePercentage }}%</span>
+                    <span class="score-points">{{ userScore }} / {{ quiz.points }} pts</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="score-message">
+                <h3>{{ getScoreMessage() }}</h3>
+                <p>{{ getEncouragementMessage() }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-section">
+            <div class="stat-card">
+              <div class="stat-icon">✅</div>
+              <div class="stat-value">{{ correctAnswers }}</div>
+              <div class="stat-label">Bonnes réponses</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">❌</div>
+              <div class="stat-value">{{ incorrectAnswers }}</div>
+              <div class="stat-label">Mauvaises réponses</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">⏱️</div>
+              <div class="stat-value">{{ quiz.duration }}</div>
+              <div class="stat-label">Minutes allouées</div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">📊</div>
+              <div class="stat-value">{{ quiz.questions.length }}</div>
+              <div class="stat-label">Questions totales</div>
+            </div>
+          </div>
+
+          <div class="badges-section" *ngIf="earnedBadges.length > 0">
+            <h2>🏅 Badges Obtenus</h2>
+            <div class="badges-grid">
+              <div *ngFor="let badge of earnedBadges" class="badge-card">
+                <div class="badge-icon">{{ badge.icon }}</div>
+                <div class="badge-info">
+                  <h4>{{ badge.name }}</h4>
+                  <p>{{ badge.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="performance-section">
+            <h2>📈 Analyse de Performance</h2>
+            <div class="performance-chart">
+              <div class="chart-bar">
+                <div class="chart-label">Réussite</div>
+                <div class="chart-progress">
+                  <div class="progress-bar success" [style.width.%]="scorePercentage">
+                    <span class="progress-text">{{ scorePercentage }}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="performance-tips">
+              <h3>💡 Conseils pour progresser</h3>
+              <ul>
+                <li *ngFor="let tip of getImprovementTips()">{{ tip }}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="actions-section">
+            <button routerLink="/quizzes" class="btn btn-primary">
+              Découvrir d'autres quiz
+            </button>
+            <button [routerLink]="['/quiz', quiz.id]" class="btn btn-secondary">
+              Refaire ce quiz
+            </button>
+            <button routerLink="/dashboard" class="btn btn-tertiary">
+              Retour au tableau de bord
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
