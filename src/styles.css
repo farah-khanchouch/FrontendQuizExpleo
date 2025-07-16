@@ -1,4 +1,16 @@
 /* Reset et styles de base */
+:root {
+  --expleo-main-purple: #6846C6;
+  --expleo-light-purple: #805CE5;
+  --expleo-deep-black: #0C0814;
+  --expleo-dark-grey: #1C1B25;
+  --expleo-light-grey-1: #E2E2E2;
+  --expleo-light-grey-2: #F0F0F0;
+
+  --text-white: #FFFFFF;
+  --text-black: #000000;
+}
+ 
 * {
   margin: 0;
   padding: 0;
@@ -6,15 +18,14 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Montserrat', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #F8FAFC;
-  color: #1F2937;
+  background: var(--expleo-light-grey-2);
+  color: var(--expleo-dark-grey);
   line-height: 1.6;
 }
+
 
 /* Animations globales */
 @keyframes fadeIn {

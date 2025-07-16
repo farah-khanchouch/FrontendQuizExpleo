@@ -1,53 +1,111 @@
-<div class="login-container">
-      <div class="login-card">
-        <div class="login-header">
-          <div class="logo">
-            <div class="logo-icon">🎯</div>
-            <h1>Expleo Quiz</h1>
+<div class="app-container">
+  <!-- 321176031711-4u5349s5hdqj4bjeknu9fj51jfee4kkk.apps.googleusercontent.com -->
+  <!-- Header -->
+<header class="header">
+  <div class="logo">
+    <img src="/logoo.jpg" alt="Expleo Logo" class="logo-icon" />
+    <!-- <img src="/logo-expleo.jpg" class="logo-icon" > -->
+  </div>
+  <button class="btn btn-secondary contact-btn" (click)="goToExpleoSite()">Contact Us</button>
+</header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <!-- Left Section - Form -->
+      <section class="form-section">
+        <div class="form-container">
+          <div class="form-header">
+            <h2>Connexion</h2>
+            <p>Bienvenue, connectez-vous à votre compte !</p>
           </div>
-          <p class="tagline">Boostez vos compétences avec nos quiz interactifs !</p>
+
+          <form (ngSubmit)="onLogin()" class="signup-form">
+            <div class="input-group">
+              <input 
+                type="text" 
+                id="email" 
+                [(ngModel)]="email" 
+                name="email"
+                placeholder="Email"
+                required
+              >
+              <label for="email">Email</label>
+            </div>
+
+            <div class="input-group password-group">
+              <input 
+                [type]="showPassword ? 'text' : 'password'" 
+                id="password" 
+                [(ngModel)]="password" 
+                name="password"
+                placeholder="Mot de passe"
+                required
+              >
+              <label for="password">Mot de passe</label>
+              <button 
+                type="button" 
+                class="password-toggle"
+                (click)="togglePassword()"
+                [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              >
+                <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2"/>
+                  <path d="M1 1l22 22" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </button>
+            </div>
+
+            <div *ngIf="errorMessage" class="error-message">
+              {{ errorMessage }}
+            </div>
+
+            <button type="submit" class="btn btn-primary signup-btn" [disabled]="isLoading">
+              <span *ngIf="!isLoading">Se connecter</span>
+              <div *ngIf="isLoading" class="loading-spinner"></div>
+            </button>
+            <button type="button" class="btn btn-google" (click)="onGoogleSignIn()" [disabled]="isLoading">
+              <img src="/google-icon.jpg" class="google-icon" />
+              Continuer avec Google
+            </button>
+            
+          </form>
+          <!-- Ton formulaire de login existant ici -->
+
+          <div class="no-account-message" style="margin-top: 16px; color: white; font-weight: 500; text-align: center;">
+             Vous n'avez pas de compte ?
+          <a (click)="goToRegister()" style="color: #407ef0; text-decoration: underline; cursor: pointer;">
+           Créez votre premier compte
+           </a>
+</div>
+
         </div>
+      </section>
 
-        <form (ngSubmit)="onLogin()" class="login-form">
-          <div class="form-group">
-            <label for="email">Nom d'utilisateur</label>
-            <input 
-              type="text" 
-              id="email" 
-              [(ngModel)]="email" 
-              name="email"
-              placeholder="Entrez votre nom d'utilisateur"
-              required
-            >
+      <!-- Divider -->
+      <div class="divider"></div>
+
+      <!-- Right Section - Welcome -->
+      <section class="welcome-section">
+        <div class="welcome-content">
+          <div class="welcome-animation">
+
+
+            <div class="floating-shapes">
+              <div class="shape shape-1"></div>
+              <div class="shape shape-2"></div>
+              <div class="shape shape-3"></div>
+              <img src="/3dnew.jpg" class="welcome-image" />
+
+            </div>
+            <h3>Welcome back !</h3>
           </div>
-
-          <div class="form-group">
-            <label for="password">Mot de passe</label>
-            <input 
-              type="password" 
-              id="password" 
-              [(ngModel)]="password" 
-              name="password"
-              placeholder="Entrez votre mot de passe"
-              required
-            >
-          </div>
-
-          <button 
-            type="submit" 
-            class="login-btn"
-            [disabled]="isLoading"
-          >
-            <span *ngIf="!isLoading">Se connecter</span>
-            <span *ngIf="isLoading" class="loading">🔄 Connexion...</span>
-          </button>
-
-          <div *ngIf="errorMessage" class="error-message">
-            {{ errorMessage }}
-          </div>
-        </form>
-
-        
-      </div>
+        </div>
+      </section>
     </div>
- 
+  </main>
+</div>
+

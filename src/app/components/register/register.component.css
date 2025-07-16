@@ -520,3 +520,29 @@
     max-width: 200px;
   }
 }
+.input-group select {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 400;
+    appearance: none;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+  
+  .input-group select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  .input-group select option {
+    background: #6846C6;
+    color: white;
+  }
+  
