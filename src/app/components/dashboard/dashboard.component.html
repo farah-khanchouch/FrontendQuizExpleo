@@ -1,71 +1,141 @@
 <div class="dashboard">
   <app-navbar></app-navbar>
   
-  <div class="dashboard-container">
-    <div class="welcome-section">
-      <h1>Bienvenue, {{ user?.username }} ! 🎉</h1>
-      <p class="welcome-message">
-        Prêt à relever de nouveaux défis ? Découvrez nos quiz interactifs et boostez vos compétences !
-      </p>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card primary">
-        <div class="stat-icon">🏆</div>
-        <div class="stat-content">
-          <h3>{{ user?.totalPoints || 0 }}</h3>
-          <p>Points totaux</p>
-        </div>
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
       </div>
+      <img src="/daasshh.jpg" alt="Illustration Quiz" />
 
-      <div class="stat-card success">
-        <div class="stat-icon">✅</div>
-        <div class="stat-content">
-          <h3>{{ user?.completedQuizzes?.length || 0 }}</h3>
-          <p>Quiz terminés</p>
-        </div>
-      </div>
-
-      <div class="stat-card warning">
-        <div class="stat-icon">🎯</div>
-        <div class="stat-content">
-          <h3>{{ availableQuizzes.length }}</h3>
-          <p>Quiz disponibles</p>
-        </div>
-      </div>
-
-      <div class="stat-card info">
-        <div class="stat-icon">🏅</div>
-        <div class="stat-content">
-          <h3>{{ user?.badges?.length || 0 }}</h3>
-          <p>Badges obtenus</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-content">
-      <div class="section">
-        <h2>🚀 Démarrer un nouveau quiz</h2>
-        <p class="section-description">
-          Choisissez parmi nos quiz thématiques et testez vos connaissances !
+      <div class="hero-text">
+        <h1>Bienvenue, {{ user?.username || 'Invité' }} !</h1>
+        <p class="hero-subtitle">Développez vos compétences avec nos quiz interactifs</p>
+        <p class="hero-description">
+          Explorez notre plateforme d'apprentissage gamifiée et mesurez vos progrès 
+          en temps réel. Défiez vos collègues et montez dans le classement !
         </p>
-        <button routerLink="/quizzes" class="cta-button">
-          Voir tous les quiz
-        </button>
-      </div>
-
-      <div class="section">
-        <h2>📊 Vos performances</h2>
-        <div class="performance-card">
-          <div class="performance-metric">
-            <div class="metric-label">Taux de réussite moyen</div>
-            <div class="metric-value">{{ calculateAverageScore() }}%</div>
-          </div>
-          <div class="performance-chart">
-            <div class="chart-bar" [style.width.%]="calculateAverageScore()"></div>
-          </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary hero-btn" routerLink="/quizzes">
+            <!-- Brain icon -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+            </svg>
+            Commencer un Quiz
+          </button>
+          <button class="btn btn-secondary hero-btn" routerLink="/stats">Voir mes Stats</button>
         </div>
       </div>
+    </div>
+  </div>
+  
+
+  <div class="stats-overview">
+    <h2 class="section-title">Votre Performance en un Coup d'Œil</h2>
+    <div class="dashboard-grid">
+      <div class="dashboard-card featured">
+        <div class="card-icon">
+          <!-- Brain icon -->
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+          </svg>
+        </div>
+        <h3>Quiz Terminés</h3>
+        <span class="stat-number">{{ stats.quizCompleted }}</span>
+        <span class="stat-change positive">+3 cette semaine</span>
+      </div>
+  
+      <div class="dashboard-card">
+        <div class="card-icon">
+          <!-- Star icon -->
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+          </svg>
+        </div>
+        <h3>Score Moyen</h3>
+        <span class="stat-number">{{ stats.averageScore }}%</span>
+        <span class="stat-change positive">+5% ce mois</span>
+      </div>
+  
+      <div class="dashboard-card">
+        <div class="card-icon">
+          <!-- Trophy icon -->
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/>
+            <path d="M10 14.66V17c0 .55.47.98.97 1.21C12.04 18.75 13 20.24 13 22"/>
+            <path d="M14 14.66V17c0 .55-.47.98-.97 1.21C11.96 18.75 11 20.24 11 22"/>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
+        </div>
+        <h3>Classement</h3>
+        <span class="stat-number">#{{ stats.ranking }}</span>
+        <span class="stat-change neutral">Stable</span>
+      </div>
+  
+      <div class="dashboard-card">
+        <div class="card-icon">
+          <!-- Clock icon -->
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12,6 12,12 16,14"/>
+          </svg>
+        </div>
+        <h3>Temps Total</h3>
+        <span class="stat-number">{{ stats.totalTime }}</span>
+        <span class="stat-change positive">+45min cette semaine</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="recent-activity">
+    <h2 class="section-title">Activité Récente</h2>
+    <div class="activity-grid">
+      <div class="activity-card" *ngFor="let activity of recentActivities">
+        <div class="activity-icon" [ngClass]="activity.type">
+          <!-- Star icon for success -->
+          <svg *ngIf="activity.type === 'success'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+          </svg>
+  
+          <!-- Trophy icon for info -->
+          <svg *ngIf="activity.type === 'info'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/>
+            <path d="M10 14.66V17c0 .55.47.98.97 1.21C12.04 18.75 13 20.24 13 22"/>
+            <path d="M14 14.66V17c0 .55-.47.98-.97 1.21C11.96 18.75 11 20.24 11 22"/>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
+  
+          <!-- Medal icon for warning -->
+          <svg *ngIf="activity.type === 'warning'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.61 2.14a2 2 0 0 1 .13 2.2L16.79 15"/>
+            <path d="M11 12 5.12 2.2"/>
+            <path d="m13 12 5.88-9.8"/>
+            <path d="M8 7h8"/>
+            <circle cx="12" cy="17" r="5"/>
+            <path d="m9 22 3-3 3 3"/>
+            <path d="M9 19h6"/>
+          </svg>
+        </div>
+  
+        <div class="activity-content">
+          <h4>{{ activity.title }}</h4>
+          <p>{{ activity.description }}</p>
+          <span class="activity-time">{{ activity.time }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 
       <div class="section" *ngIf="user && user.badges && user.badges.length > 0">
         <h2>🏅 Vos badges</h2>
@@ -80,27 +150,171 @@
         </div>
       </div>
 
-      <div class="section">
-        <h2>🎯 Quiz recommandés</h2>
-        <div class="recommended-quizzes">
-          <div *ngFor="let quiz of getRecommendedQuizzes()" class="quiz-card-mini">
-            <div class="quiz-theme-badge" [class]="quiz.theme">
-              {{ getThemeIcon(quiz.theme) }}
-            </div>
-            <div class="quiz-info">
-              <h4>{{ quiz.title }}</h4>
-              <p>{{ quiz.description }}</p>
-              <div class="quiz-meta">
-                <span class="duration">⏱️ {{ quiz.duration }}min</span>
-                <span class="points">🏆 {{ quiz.points }}pts</span>
-              </div>
-            </div>
-            <button [routerLink]="['/quiz', quiz.id]" class="start-btn">
-              Commencer
-            </button>
-          </div>
+      <!-- Recommended Quizzes -->
+<div class="recommended-section">
+  <h2 class="section-title">Quiz Recommandés pour Vous</h2>
+
+  <div class="quiz-recommendations">
+    <div class="quiz-card recommended" *ngFor="let quiz of recommendedQuizzes">
+      
+      <div class="quiz-badge" [ngClass]="quiz.badge">
+        {{ quiz.badge === 'new' ? 'Nouveau' : quiz.badge === 'trending' ? 'Tendance' : 'Populaire' }}
+      </div>
+
+      <div class="quiz-header">
+        <h3>{{ quiz.title }}</h3>
+        <div class="quiz-difficulty" [ngClass]="quiz.difficulty">
+          {{ quiz.difficulty === 'expert' ? 'Expert' : quiz.difficulty === 'intermediate' ? 'Intermédiaire' : 'Débutant' }}
         </div>
       </div>
+
+      <p>{{ quiz.description }}</p>
+
+      <div class="quiz-meta">
+        <span>
+          <!-- Clock icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12,6 12,12 16,14"></polyline>
+          </svg>
+          {{ quiz.duration }} min
+        </span>
+
+        <span>
+          <!-- Brain icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08
+                     3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24
+                     2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
+            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15
+                     a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08
+                     3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24
+                     2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
+          </svg>
+          {{ quiz.questions }} questions
+        </span>
+
+        <span>
+          <!-- Star icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+            <polygon points="12,2 15.09,8.26 22,9.27
+                              17,14.14 18.18,21.02
+                              12,17.77 5.82,21.02
+                              7,14.14 2,9.27 8.91,8.26"/>
+          </svg>
+          {{ quiz.rating }}/5
+        </span>
+      </div>
+
+      <div class="quiz-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="quiz.progress"></div>
+        </div>
+        <span>{{ quiz.status }}</span>
+      </div>
+
+      <button class="btn quiz-btn"
+              [ngClass]="quiz.progress === 0 ? 'btn-primary' : 'btn-secondary'">
+        {{ quiz.progress === 0 ? 'Commencer' :
+           quiz.progress === 100 ? 'Refaire' : 'Continuer' }}
+      </button>
+
+    </div>
+  </div>
+</div>
+
+  <!-- Learning Path -->
+  <div class="learning-path">
+    <h2 class="section-title">Votre Parcours d'Apprentissage</h2>
+    <div class="path-container">
+      <ng-container *ngFor="let step of learningPath; let i = index">
+        <div class="path-step" [ngClass]="step.status">
+          <div class="step-number">{{step.step}}</div>
+          <div class="step-content">
+            <h4>{{step.title}}</h4>
+            <p>{{step.description}}</p>
+            <span class="step-status">{{step.statusText}}</span>
+          </div>
+        </div>
+        <div class="path-connector" [ngClass]="step.status === 'completed' ? 'completed' : ''" *ngIf="i < learningPath.length - 1"></div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Team Leaderboard Preview -->
+  <div class="team-preview">
+    <h2 class="section-title">Top Performers de l'Équipe</h2>
+    <div class="mini-leaderboard">
+      <div class="leader-item" [ngClass]="performer.rank === '🥇' ? 'gold' : performer.rank === '🥈' ? 'silver' : 'bronze'" [class.current]="performer.current" *ngFor="let performer of topPerformers">
+        <div class="leader-rank">{{performer.rank}}</div>
+        <img [src]="performer.avatar" [alt]="performer.name" />
+        <div class="leader-info">
+          <h4>{{performer.name}}</h4>
+          <span>{{performer.points}}</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-secondary view-full-btn">
+      <!-- Trophy icon -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+        <path d="M4 22h16"/>
+        <path d="M10 14.66V17c0 .55.47.98.97 1.21C12.04 18.75 13 20.24 13 22"/>
+        <path d="M14 14.66V17c0 .55-.47.98-.97 1.21C11.96 18.75 11 20.24 11 22"/>
+        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+      </svg>
+      Voir le Classement Complet
+    </button>
+  </div>
+
+  <!-- Achievements -->
+  <div class="achievements-section">
+    <h2 class="section-title">Vos Accomplissements</h2>
+    <div class="achievements-grid">
+      <div class="achievement-card" [ngClass]="achievement.earned ? 'earned' : 'locked'" *ngFor="let achievement of achievements">
+        <div class="achievement-icon">{{achievement.icon}}</div>
+        <h4>{{achievement.title}}</h4>
+        <p>{{achievement.description}}</p>
+        <span class="achievement-date" *ngIf="achievement.earned">{{achievement.date}}</span>
+        <span class="achievement-progress" *ngIf="!achievement.earned">{{achievement.progress}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <h2 class="section-title">Actions Rapides</h2>
+    <div class="actions-grid">
+      <button class="action-card" *ngFor="let action of quickActions">
+        <div class="action-icon">
+          <!-- Brain icon -->
+          <svg *ngIf="action.icon === 'brain'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+          </svg>
+          <!-- BarChart3 icon -->
+          <svg *ngIf="action.icon === 'chart'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18h18"/>
+            <path d="M18 17V9"/>
+            <path d="M13 17V5"/>
+            <path d="M8 17v-3"/>
+          </svg>
+          <!-- User icon -->
+          <svg *ngIf="action.icon === 'user'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <!-- Settings icon -->
+          <svg *ngIf="action.icon === 'settings'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6"/>
+            <path d="m21 12-6-6-6 6-6-6"/>
+          </svg>
+        </div>
+        <h4>{{action.title}}</h4>
+        <p>{{action.description}}</p>
+      </button>
     </div>
   </div>
 </div>

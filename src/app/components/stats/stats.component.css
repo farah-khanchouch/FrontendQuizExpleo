@@ -1,0 +1,145 @@
+/* 
+Page containers */
+.page-container {
+    min-height: 100vh;
+    background: #6846c5;
+
+  }
+  
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .page-header h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .page-header p {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 400;
+  }
+  
+  /* Stats page */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+  }
+  
+  .stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(10px);
+    animation: slideInUp 0.8s ease-out;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .stat-card .stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    color: white;
+  }
+  
+  .stat-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22C55E, #16A34A);
+    transition: width 0.3s ease;
+  }
+  
+  .chart-placeholder {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+    height: 100px;
+    margin-bottom: 8px;
+  }
+  
+  .chart-placeholder .bar {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    min-height: 20px;
+    transition: all 0.3s ease;
+  }
+  
+  .chart-placeholder .bar:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .best-results {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+  }
+  
+  .result-item .score {
+    font-weight: 600;
+    color: #22C55E;
+  }
+  
+  /* Animations */
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .page-header h2 {
+      font-size: 28px;
+    }
+  }

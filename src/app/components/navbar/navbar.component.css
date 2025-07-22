@@ -51,6 +51,8 @@
       display: flex;
       align-items: center;
       gap: 30px;
+      margin-left: auto; /* ✅ Ceci aligne le menu à droite */
+
     }
 
     .navbar-menu a {
@@ -130,7 +132,12 @@
     .logout-btn:hover {
       background: rgba(255, 255, 255, 0.2);
       transform: translateY(-2px);
+
     }
+    .navbar-menu svg {
+      display: none;
+    }
+    
 
     @media (max-width: 768px) {
       .navbar-container {

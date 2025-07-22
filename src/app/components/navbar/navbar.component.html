@@ -1,28 +1,45 @@
 <nav class="navbar">
-      <div class="navbar-container">
-        <div class="navbar-brand">
-          <div class="logo">
-            <img src="/logoo.jpg" alt="Expleo Logo" class="logo-icon" />
-          </div>
-        </div>
+  <div class="navbar-container">
+    <div class="navbar-brand">
+      <div class="logo">
+        <img src="/logoo.jpg" alt="Expleo Logo" class="logo-icon" />
+      </div>
+    </div>
 
-        <div class="navbar-menu">
-          <a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a>
-          <a routerLink="/quizzes" routerLinkActive="active">Quiz</a>
-          <div *ngIf="user?.role === 'admin'" class="admin-section">
-            <a href="#" class="admin-link">Administration</a>
-          </div>
-        </div>
+    <div class="navbar-menu">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-btn">
+        <span>Accueil</span>
+      </a>
 
-        <div class="navbar-user" *ngIf="user">
-          <div class="user-info">
-            <div class="user-avatar">{{ user.avatar }}</div>
-            <div class="user-details">
-              <span class="user-name">{{ user.username }}</span>
-              <span class="user-points">{{ user.totalPoints }} pts</span>
-            </div>
-          </div>
-          <button (click)="logout()" class="logout-btn">Déconnexion</button>
+      <a routerLink="/quizzes" routerLinkActive="active" class="nav-btn">
+        <span>Mes Quiz</span>
+      </a>
+
+      <a routerLink="/stats" routerLinkActive="active" class="nav-btn">
+        <span>Mes Stats</span>
+      </a>
+
+      <a routerLink="/classement" routerLinkActive="active" class="nav-btn">
+        <span>Classement</span>
+      </a>
+
+      <a routerLink="/profil" routerLinkActive="active" class="nav-btn">
+        <span>Profil</span>
+      </a>
+
+      <div *ngIf="user?.role === 'admin'" class="admin-section">
+        <a href="#" class="nav-btn admin-link">Administration</a>
+      </div>
+    </div>
+
+    <div class="navbar-user" *ngIf="user">
+      <div class="user-info">
+        <div class="user-avatar">{{ user.avatar }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ user.username }}</span>
+          <span class="user-points">{{ user.totalPoints }} pts</span>
         </div>
       </div>
-    </nav>
+    </div>
+  </div>
+</nav>

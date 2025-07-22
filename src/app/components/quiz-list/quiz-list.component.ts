@@ -17,6 +17,7 @@ export class QuizListComponent implements OnInit {
   filteredQuizzes: Quiz[] = [];
   selectedTheme: string = '';
   isLoading = true;
+  
 
   constructor(private quizService: QuizService) {}
 

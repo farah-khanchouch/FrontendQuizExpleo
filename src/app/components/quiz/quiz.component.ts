@@ -20,6 +20,13 @@ export class QuizComponent implements OnInit {
   answers: { [questionId: string]: string } = {};
   score = 0;
   isLoading = true;
+  badge?: string;
+  badgeClass?: string;
+  status?: string;
+  duration?: string;
+  questions?: number;
+  description?: string;
+  title?: string;
 
   constructor(
     private route: ActivatedRoute,

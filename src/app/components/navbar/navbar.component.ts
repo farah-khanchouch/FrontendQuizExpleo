@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { User } from '../../../models/quiz.model';
+import { User } from '../../../models/user.model'; // ✅ car tu utilises totalPoints
+  
 
 @Component({
   selector: 'app-navbar',

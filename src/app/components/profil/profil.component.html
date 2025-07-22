@@ -1,0 +1,62 @@
+<app-navbar></app-navbar>
+
+<div class="page-container">
+  <div class="page-header">
+    <h2> Mon Profil</h2>
+    <p>Gérez vos informations personnelles</p>
+  </div>
+
+  <div class="profile-container" *ngIf="user; else notConnected">
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <img *ngIf="user.avatar; else defaultAvatar" [src]="user.avatar" alt="Avatar" />
+        <ng-template #defaultAvatar>
+          <img src="/assets/default-avatar.png" alt="Avatar par défaut" />
+        </ng-template>
+        <button class="avatar-edit-btn" title="Modifier l'avatar">
+          ✏️
+        </button>
+      </div>
+
+      <div class="profile-info">
+        <div class="input-group">
+          <input type="text" [(ngModel)]="editableUser.username" placeholder="Nom d'utilisateur" />
+          <label>Nom d'utilisateur</label>
+        </div>
+
+        <div class="input-group">
+          <input type="email" [(ngModel)]="editableUser.email" placeholder="Email" />
+          <label>Email</label>
+        </div>
+
+        <div class="input-group">
+          <select [(ngModel)]="editableUser.cbu">
+            <option value="" disabled selected>Choisissez un CBU</option>
+            <option>PCPR : Product Conformity Performance Reliability</option>
+            <option>ME : Manufacturing Engineering</option>
+            <option>EES : Electronic Embedded Systems</option>
+            <option>DET : Digital and Technology</option>
+            <option>MPE : Mechanical Product Engineering</option>
+            <option>CSP / SGA</option>
+          </select>
+          <label>CBU</label>
+        </div>
+        
+        
+
+        
+
+        
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      <button class="btn btn-primary" (click)="onSave()"> Sauvegarder</button>
+      <button class="btn btn-secondary" (click)="onCancel()"> Annuler</button>
+    </div>
+  </div>
+
+  <ng-template #notConnected>
+    <p>Vous n'êtes pas connecté(e).</p>
+  </ng-template>
+</div>

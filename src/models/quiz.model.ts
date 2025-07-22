@@ -9,6 +9,7 @@ export interface User {
   completedQuizzes: string[];
 }
 
+
 export interface Quiz {
   id: string;
   title: string;
@@ -19,6 +20,9 @@ export interface Quiz {
   duration: number; // en minutes
   points: number;
   imageUrl?: string;
+  badge?: string;
+  badgeClass?: string;
+  status?: 'completed' | 'not-started';
 }
 
 export interface Question {

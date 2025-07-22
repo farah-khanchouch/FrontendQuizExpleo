@@ -1,0 +1,62 @@
+<app-navbar></app-navbar>
+<div class="page-container">
+    <div class="page-header">
+      <h2>Mes Statistiques</h2>
+      <p>Suivez vos progrès et performances</p>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <!-- BarChart3 icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18h18"/>
+            <path d="M18 17V9"/>
+            <path d="M13 17V5"/>
+            <path d="M8 17v-3"/>
+          </svg>
+        </div>
+        <h3>Progression Globale</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 75%"></div>
+        </div>
+        <span>75% complété</span>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <!-- Calendar icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+            <line x1="16" x2="16" y1="2" y2="6"/>
+            <line x1="8" x2="8" y1="2" y2="6"/>
+            <line x1="3" x2="21" y1="10" y2="10"/>
+          </svg>
+        </div>
+        <h3>Quiz par Semaine</h3>
+        <div class="chart-placeholder">
+          <div class="bar" style="height: 60%"></div>
+          <div class="bar" style="height: 80%"></div>
+          <div class="bar" style="height: 40%"></div>
+          <div class="bar" style="height: 90%"></div>
+          <div class="bar" style="height: 70%"></div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <!-- Star icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+          </svg>
+        </div>
+        <h3>Meilleurs Résultats</h3>
+        <div class="best-results">
+          <div class="result-item" *ngFor="let result of bestResults">
+            <span>{{result.subject}}</span>
+            <span class="score">{{result.score}}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
