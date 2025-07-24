@@ -1,0 +1,278 @@
+.question-management {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.breadcrumb a {
+  color: var(--purple);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb span {
+  color: var(--light-grey-2);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+.page-title {
+  color: var(--light-grey-1);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  color: var(--light-grey-2);
+  font-size: 1.1rem;
+  opacity: 0.8;
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.question-item {
+  background-color: rgba(40, 39, 53, 0.5);
+  border: 1px solid #2a2935;
+  border-radius: var(--border-radius);
+  padding: 24px;
+  transition: var(--transition);
+}
+
+.question-item:hover {
+  border-color: var(--purple);
+  background-color: rgba(40, 39, 53, 0.8);
+}
+
+.question-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.question-number {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--purple) 0%, #8B5CF6 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.question-type {
+  flex: 1;
+}
+
+.question-points {
+  color: var(--purple);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.question-content {
+  margin-bottom: 20px;
+}
+
+.question-text {
+  color: var(--light-grey-1);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--dark-grey);
+  border: 1px solid #2a2935;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.option.correct {
+  border-color: var(--purple);
+  background-color: rgba(104, 70, 198, 0.1);
+}
+
+.option-letter {
+  color: var(--purple);
+  font-weight: 700;
+  min-width: 20px;
+}
+
+.option-text {
+  flex: 1;
+  color: var(--light-grey-2);
+}
+
+.correct-indicator {
+  color: var(--purple);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.question-answer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: var(--dark-grey);
+  border: 1px solid var(--purple);
+  border-radius: var(--border-radius);
+}
+
+.answer-label {
+  color: var(--light-grey-2);
+  font-weight: 600;
+}
+
+.answer-value {
+  color: var(--purple);
+  font-weight: 700;
+}
+
+.question-explanation {
+  color: var(--light-grey-2);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 12px 16px;
+  background-color: rgba(40, 39, 53, 0.3);
+  border-radius: var(--border-radius);
+  border-left: 3px solid var(--purple);
+}
+
+.question-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.question-actions .btn {
+  font-size: 0.85rem;
+  padding: 8px 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--light-grey-2);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  color: var(--light-grey-1);
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.modal-large {
+  max-width: 700px;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.option-radio {
+  accent-color: var(--purple);
+}
+
+.option-input .form-input {
+  flex: 1;
+}
+
+.btn-small {
+  padding: 6px 8px;
+  font-size: 0.8rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .question-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .question-actions {
+    gap: 4px;
+  }
+  
+  .question-actions .btn {
+    flex: 1;
+    min-width: 80px;
+  }
+  
+  .option-input {
+    flex-wrap: wrap;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-content {
+    padding: 20px;
+  }
+}

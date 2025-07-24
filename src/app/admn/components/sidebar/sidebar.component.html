@@ -1,0 +1,41 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <div class="logo-text">
+        <h2>Quiz Admin</h2>
+        <span>Dashboard</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li class="nav-item" *ngFor="let item of menuItems">
+        <a 
+          [routerLink]="item.route"
+          class="nav-link"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          <div class="nav-content">
+            <span class="nav-label">{{ item.label }}</span>
+            <span class="nav-description">{{ item.description }}</span>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  
+
+  <div class="sidebar-footer">
+    <div class="admin-info">
+      <div class="admin-avatar">F</div>
+      <div class="admin-details">
+        <span class="admin-name">Farah</span>
+        <span class="admin-role">Administratrice</span>
+      </div>
+    </div>
+  </div>
+</aside>

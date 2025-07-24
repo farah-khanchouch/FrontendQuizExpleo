@@ -65,6 +65,7 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  
   isAuthenticated(): boolean {
     return this.currentUserSubject.value !== null;
   }

@@ -1,0 +1,134 @@
+<div class="user-management">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Gestion des Collaborateurs</h1>
+      <p class="page-subtitle">{{ stats.total }} collaborateurs • {{ stats.active }} actifs • {{ stats.averageCompletion }}% de completion moyenne</p>
+    </div>
+    <button class="btn btn-secondary" (click)="exportUsers()">
+      📊 Exporter
+    </button>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <div class="stat-number">{{ stats.total }}</div>
+      <div class="stat-label">Total collaborateurs</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-number">{{ stats.active }}</div>
+      <div class="stat-label">Actifs</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-number">{{ stats.inactive }}</div>
+      <div class="stat-label">Inactifs</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-number">{{ stats.averageCompletion }}%</div>
+      <div class="stat-label">Completion moyenne</div>
+    </div>
+  </div>
+
+  <!-- Filtres et recherche -->
+  <div class="card">
+    <div class="filters">
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="form-input" 
+          placeholder="Rechercher par nom ou email..."
+          [(ngModel)]="searchTerm"
+        >
+      </div>
+      <div class="filter-group">
+        <select class="form-select" [(ngModel)]="statusFilter">
+          <option value="all">Tous les statuts</option>
+          <option value="active">Actifs</option>
+          <option value="inactive">Inactifs</option>
+          <option value="blocked">Bloqués</option>
+        </select>
+        <select class="form-select" [(ngModel)]="departmentFilter">
+          <option value="all">Tous les départements</option>
+          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des utilisateurs -->
+  <div class="card">
+    <div class="users-grid">
+      <div class="user-card" *ngFor="let user of filteredUsers">
+        <div class="user-header">
+          <div class="user-avatar">{{ user.name.charAt(0) }}</div>
+          <div class="user-info">
+            <h3 class="user-name">{{ user.name }}</h3>
+            <p class="user-email">{{ user.email }}</p>
+            <p class="user-department">{{ user.department }}</p>
+          </div>
+          <div class="user-status">
+            <span class="badge" [class]="getStatusBadgeClass(user.status)">
+              {{ getStatusLabel(user.status) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="user-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{ user.completedQuizzes }}/{{ user.totalQuizzes }}</div>
+            <div class="stat-label">Quiz terminés</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ user.averageScore }}%</div>
+            <div class="stat-label">Score moyen</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ user.badges }}</div>
+            <div class="stat-label">Badges</div>
+          </div>
+        </div>
+
+        <div class="user-progress">
+          <div class="progress-header">
+            <span>Progression</span>
+            <span>{{ getCompletionRate(user) }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getCompletionRate(user)"></div>
+          </div>
+        </div>
+
+        <div class="user-meta">
+          <span class="join-date">Inscrit le {{ user.joinedAt | date:'dd/MM/yyyy' }}</span>
+          <span class="last-activity">Dernière activité : {{ user.lastActivity | date:'dd/MM/yyyy' }}</span>
+        </div>
+
+        <div class="user-actions">
+          <button 
+            class="btn btn-secondary" 
+            (click)="toggleUserStatus(user)"
+            [disabled]="user.status === 'blocked'"
+          >
+            {{ user.status === 'active' ? '⏸️ Désactiver' : '▶️ Activer' }}
+          </button>
+          <button 
+            class="btn btn-warning" 
+            (click)="blockUser(user)"
+            [disabled]="user.status === 'blocked'"
+          >
+            🚫 Bloquer
+          </button>
+          <button class="btn btn-danger" (click)="deleteUser(user.id)">
+            🗑️ Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredUsers.length === 0">
+      <div class="empty-icon">👥</div>
+      <h3>Aucun collaborateur trouvé</h3>
+      <p>Essayez de modifier vos critères de recherche.</p>
+    </div>
+  </div>
+</div>

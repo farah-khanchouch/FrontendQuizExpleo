@@ -55,7 +55,12 @@ export class LoginComponent {
       next: (user) => {
         this.isLoading = false;
         if (user) {
-          this.router.navigate(['/dashboard']);
+            // Vérifie le rôle de l'utilisateur
+          if (user.role === 'admin') {
+            this.router.navigate(['/admin/dashboard']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         } else {
           this.errorMessage = 'Nom d\'utilisateur ou mot de passe incorrect';
         }

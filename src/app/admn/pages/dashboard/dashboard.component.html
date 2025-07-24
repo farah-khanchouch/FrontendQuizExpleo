@@ -1,0 +1,88 @@
+<div class="dashboard">
+  <div class="dashboard-header">
+    <h1 class="page-title">Dashboard Administrateur</h1>
+    <p class="page-subtitle">Vue d'ensemble de votre plateforme de quiz</p>
+  </div>
+
+  <!-- Statistiques principales -->
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <div class="stat-number">{{ stats.totalQuizzes }}</div>
+      <div class="stat-label">Quiz créés</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-number">{{ stats.activeUsers }}</div>
+      <div class="stat-label">Collaborateurs actifs</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-number">{{ stats.averageScore }}%</div>
+      <div class="stat-label">Score moyen</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-number">{{ stats.totalBadges }}</div>
+      <div class="stat-label">Badges disponibles</div>
+    </div>
+  </div>
+
+  <!-- Actions rapides -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="section-title">Actions rapides</h2>
+    </div>
+    <div class="quick-actions">
+      <a routerLink="/quiz-management" class="action-card">
+        <div class="action-icon">🎯</div>
+        <h3>Créer un quiz</h3>
+        <p>Nouveau questionnaire</p>
+      </a>
+      <a routerLink="/user-management" class="action-card">
+        <div class="action-icon">👥</div>
+        <h3>Gérer utilisateurs</h3>
+        <p>Voir les performances</p>
+      </a>
+      <a routerLink="/badge-management" class="action-card">
+        <div class="action-icon">🏆</div>
+        <h3>Créer un badge</h3>
+        <p>Nouvelle récompense</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Activité récente -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="section-title">Activité récente</h2>
+      </div>
+      <div class="activity-list">
+        <div class="activity-item" *ngFor="let activity of recentActivity">
+          <div class="activity-user">{{ activity.user }}</div>
+          <div class="activity-action">{{ activity.action }}</div>
+          <div class="activity-meta">
+            <span *ngIf="activity.score" class="activity-score">{{ activity.score }}%</span>
+            <span class="activity-time">il y a {{ activity.time }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top performers -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="section-title">Meilleurs collaborateurs</h2>
+      </div>
+      <div class="performers-list">
+        <div class="performer-item" *ngFor="let performer of topPerformers; let i = index">
+          <div class="performer-rank">{{ i + 1 }}</div>
+          <div class="performer-info">
+            <div class="performer-name">{{ performer.name }}</div>
+            <div class="performer-stats">
+              {{ performer.quizzes }} quiz • {{ performer.badges }} badges
+            </div>
+          </div>
+          <div class="performer-score">{{ performer.score }}%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

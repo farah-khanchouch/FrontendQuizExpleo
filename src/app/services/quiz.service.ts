@@ -1,11 +1,18 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Quiz, Question, QuizResult, Badge } from '../../models/quiz.model';
+import { HttpClient } from '@angular/common/http';
+
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class QuizService {
+  
+  constructor(private http: HttpClient) {}
+
+  
   private quizzes: Quiz[] = [
     {
       id: '1',
@@ -239,4 +246,9 @@ export class QuizService {
       }, 300);
     });
   }
+  finishQuiz(score: number, timeSpent: number): Observable<any> {
+    const body = { score, timeSpent };
+    return this.http.post('/api/quiz/finish', body);
+  }
+  
 }

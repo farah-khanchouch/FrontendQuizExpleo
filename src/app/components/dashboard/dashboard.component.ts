@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { QuizService } from '../../services/quiz.service';
 import { User } from '../../../models/user.model'; // ✅ car tu utilises badges, points
 import { Quiz } from '../../../models/quiz.model';
-
+import { DashboardService, UserStats } from '../../services/dashboard.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -18,9 +18,17 @@ export class DashboardComponent implements OnInit {
   user: User | null = null;
   availableQuizzes: Quiz[] = [];
 
+  stats: UserStats = {
+    quizCompleted: 0,
+    averageScore: 0,
+    ranking: 0,
+    totalTime: ''
+  };
+
   constructor(
     private authService: AuthService,
     private quizService: QuizService,
+    private dashboardService: DashboardService
     
   ) {}
 
@@ -32,7 +40,19 @@ export class DashboardComponent implements OnInit {
     this.quizService.getQuizzes().subscribe((quizzes: Quiz[]) => {
       this.availableQuizzes = quizzes;
     });
+    this.getUserStats();
   }
+  getUserStats() {
+    this.dashboardService.getUserStats().subscribe({
+      next: (data) => {
+        this.stats = data;
+      },
+      error: (err) => { 
+        console.error('Erreur récupération stats : ', err);
+      }
+    });
+  }
+  
 
   calculateAverageScore(): number {
     return Math.floor(Math.random() * 40) + 60;
@@ -41,12 +61,7 @@ export class DashboardComponent implements OnInit {
   getRecommendedQuizzes(): Quiz[] {
     return this.availableQuizzes.slice(0, 3);
   }
- stats = {
-  quizCompleted: 12,
-  averageScore: 87,
-  ranking: 4,
-  totalTime: '3h 20min'
-};
+ 
   
 recentActivities = [
   {
