@@ -12,27 +12,35 @@ export interface User {
 
 export interface Quiz {
   id: string;
+  _id: string;
   title: string;
   description: string;
   theme: 'technique' | 'culture' | 'ludique';
-  difficulty: 'facile' | 'moyen' | 'difficile';
   questions: Question[];
   duration: number; // en minutes
   points: number;
   imageUrl?: string;
   badge?: string;
   badgeClass?: string;
-  status?: 'completed' | 'not-started';
-}
+  createdAt?: Date;
+  participants?: number;
+  averageScore?: number;
+  status: 'draft' | 'active' | 'archived'; // État général du quiz (admin)
+  progressStatus?: 'not-started' | 'in-progress' | 'completed'; // État pour un utilisateur
+  userStatus?: 'not-started' | 'in-progress' | 'completed'; // État utilisateur
+  
+
+ }
 
 export interface Question {
-  id: string;
+  id?: string;
   question: string;
   type: 'qcm' | 'vrai-faux' | 'libre';
   options?: string[];
-  correctAnswer: string | string[];
+  correctAnswer: string | string[]| number;
   explanation?: string;
   points: number;
+  quizId?: string;
 }
 
 export interface Badge {

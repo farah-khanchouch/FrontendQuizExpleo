@@ -12,6 +12,8 @@
     <button class="btn btn-primary" (click)="openCreateModal()">
       ➕ Nouvelle Question
     </button>
+    <button class="btn btn-primary" (click)="saveAllQuestions()">💾 Sauvegarder</button>
+
   </div>
 
   <div class="card">
@@ -39,13 +41,13 @@
           </div>
           
           <!-- Réponse pour Vrai/Faux -->
-          <div class="question-answer" *ngIf="question.type === 'true-false'">
+          <div class="question-answer" *ngIf="question.type === 'vrai-faux'">
             <span class="answer-label">Réponse correcte :</span>
             <span class="answer-value">{{ question.correctAnswer === 'true' ? 'Vrai' : 'Faux' }}</span>
           </div>
           
           <!-- Réponse pour réponse courte -->
-          <div class="question-answer" *ngIf="question.type === 'short-answer'">
+          <div class="question-answer" *ngIf="question.type === 'libre'">
             <span class="answer-label">Réponse correcte :</span>
             <span class="answer-value">{{ question.correctAnswer }}</span>
           </div>
@@ -88,7 +90,7 @@
       {{ editingQuestion ? 'Modifier la Question' : 'Créer une nouvelle Question' }}
     </h2>
     
-    <form (ngSubmit)="editingQuestion ? updateQuestion() : createQuestion()">
+    <form (ngSubmit)="editingQuestion ? updateQuestion() : saveNewQuestion()">
       <div class="form-group">
         <label class="form-label">Type de question</label>
         <select 
@@ -99,8 +101,8 @@
           (change)="onQuestionTypeChange()"
         >
           <option value="qcm">QCM (Choix multiple)</option>
-          <option value="true-false">Vrai/Faux</option>
-          <option value="short-answer">Réponse courte</option>
+          <option value="vrai-faux">Vrai/Faux</option>
+          <option value="libre">Réponse courte</option>
         </select>
       </div>
       
@@ -117,45 +119,42 @@
         ></textarea>
       </div>
       
-      <!-- Options pour QCM -->
-      <div class="form-group" *ngIf="(editingQuestion ? editingQuestion.type : newQuestion.type) === 'qcm'">
-        <label class="form-label">Options de réponse</label>
-        <div class="options-list">
-          <div class="option-input" 
-               *ngFor="let option of (editingQuestion ? editingQuestion.options : newQuestion.options); let i = index">
-            <input 
-              type="radio" 
-              [name]="'correctAnswer'"
-              [value]="i"
-              [ngModel]="editingQuestion ? editingQuestion.correctAnswer : newQuestion.correctAnswer"
-              (ngModelChange)="editingQuestion ? (editingQuestion.correctAnswer = $event) : (newQuestion.correctAnswer = $event)"
-              class="option-radio"
-            >
-            <input 
-              type="text" 
-              class="form-input"
-              [ngModel]="(editingQuestion ? editingQuestion.options : newQuestion.options)![i]"
-              (ngModelChange)="editingQuestion ? (editingQuestion.options![i] = $event) : (newQuestion.options![i] = $event)"
-              [name]="'option' + i"
-              placeholder="Option {{ getOptionLetter(i) }}"
-            >
-            <button 
-              type="button" 
-              class="btn btn-danger btn-small"
-              (click)="removeOption(i)"
-              *ngIf="(editingQuestion ? editingQuestion.options : newQuestion.options)!.length > 2"
-            >
-              ✕
-            </button>
-          </div>
-          <button type="button" class="btn btn-secondary" (click)="addOption()">
-            ➕ Ajouter une option
-          </button>
-        </div>
-      </div>
-      
+      <!-- QCM - Options de réponse -->
+<div class="form-group qcm-options" *ngIf="(editingQuestion?.type || newQuestion.type) === 'qcm'">
+  <label class="form-label">Options de réponse</label>
+  
+  
+  <div 
+  class="option-input"
+  *ngFor="let option of (editingQuestion ? editingQuestion.options : newQuestion.options); let i = index; trackBy: trackByIndex">
+    <input
+      type="radio"
+      [name]="'correctAnswer'"
+      [value]="i"
+      [ngModel]="editingQuestion ? editingQuestion.correctAnswer : newQuestion.correctAnswer"
+      (ngModelChange)="editingQuestion ? (editingQuestion.correctAnswer = $event) : (newQuestion.correctAnswer = $event)"
+      class="option-radio"
+    >
+    <input
+      type="text"
+      class="form-input"
+      [ngModel]="(editingQuestion ? editingQuestion.options : newQuestion.options)![i]"
+      (ngModelChange)="editingQuestion ? (editingQuestion.options![i] = $event) : (newQuestion.options![i] = $event)"
+      [name]="'option' + i"
+      placeholder="Option {{ getOptionLetter(i) }}"
+    >
+    <button type="button" class="btn btn-danger btn-small" (click)="removeOption(i)" *ngIf="(editingQuestion ? editingQuestion.options : newQuestion.options)!.length > 2">
+      ✕
+    </button>
+
+  </div>
+  <button type="button" class="btn btn-secondary add-option-btn" (click)="addOption()">
+    ➕ Ajouter une option
+  </button>
+</div>
+
       <!-- Réponse pour Vrai/Faux -->
-      <div class="form-group" *ngIf="(editingQuestion ? editingQuestion.type : newQuestion.type) === 'true-false'">
+      <div class="form-group" *ngIf="(editingQuestion ? editingQuestion.type : newQuestion.type) === 'vrai-faux'">
         <label class="form-label">Réponse correcte</label>
         <select 
           class="form-select" 
@@ -169,7 +168,7 @@
       </div>
       
       <!-- Réponse pour réponse courte -->
-      <div class="form-group" *ngIf="(editingQuestion ? editingQuestion.type : newQuestion.type) === 'short-answer'">
+      <div class="form-group" *ngIf="(editingQuestion ? editingQuestion.type : newQuestion.type) === 'libre'">
         <label class="form-label">Réponse correcte</label>
         <input 
           type="text" 

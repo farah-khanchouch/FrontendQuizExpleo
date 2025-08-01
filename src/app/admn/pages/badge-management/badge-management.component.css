@@ -309,6 +309,14 @@
   margin-top: 24px;
 }
 
+.modal-content {
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.15) !important;
+  border: 2px solid #e0e0e0 !important;
+  padding: 32px !important;
+}
+
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;

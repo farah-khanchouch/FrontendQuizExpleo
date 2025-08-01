@@ -16,8 +16,11 @@
         <span>⏱️ {{quiz.duration}}</span>
         <span>❓ {{quiz.questions.length}} questions</span>
       </div>
-      <button class="btn" [ngClass]="quiz.status === 'completed' ? 'btn-secondary' : 'btn-primary'">
-        {{quiz.status === 'completed' ? 'Refaire' : 'Commencer'}}
+      <button class="btn" [ngClass]="quiz.progressStatus === 'completed' ? 'btn-secondary' : 'btn-primary'"
+      >
+      {{ quiz.progressStatus === 'completed' ? 'Refaire' : 'Commencer' }}
+     
+
       </button>
     </div>
   </div>

@@ -12,14 +12,18 @@ export class AdminGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean {
-    if (!this.authService.isAuthenticated()) {
+    const user = this.authService.getCurrentUser();
+    console.log('🛡️ Vérif admin - user:', user);
+  
+    if (!user) {
       this.router.navigate(['/login']);
       return false;
     }
-    if (!this.authService.isAdmin()) {
+    if (user.role !== 'admin') {
       this.router.navigate(['/dashboard']);
       return false;
     }
     return true;
   }
+  
 }

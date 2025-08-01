@@ -13,7 +13,7 @@
     <div class="card-header">
       <h2 class="section-title">Liste des Quiz</h2>
     </div>
-    
+
     <div class="quiz-grid">
       <div class="quiz-card" *ngFor="let quiz of quizzes">
         <div class="quiz-header">
@@ -22,9 +22,9 @@
             {{ getStatusLabel(quiz.status) }}
           </span>
         </div>
-        
+
         <p class="quiz-description">{{ quiz.description }}</p>
-        
+
         <div class="quiz-stats">
           <div class="stat">
             <span class="stat-value">{{ quiz.questions }}</span>
@@ -34,20 +34,22 @@
             <span class="stat-value">{{ quiz.participants }}</span>
             <span class="stat-label">Participants</span>
           </div>
-          <div class="stat" *ngIf="quiz.participants > 0">
+          <!-- Correction -->
+          <div class="stat" *ngIf="quiz.participants !== undefined && quiz.participants > 0">
             <span class="stat-value">{{ quiz.averageScore }}%</span>
             <span class="stat-label">Score moyen</span>
           </div>
         </div>
-        
+
         <div class="quiz-meta">
           <span class="quiz-date">Créé le {{ quiz.createdAt | date:'dd/MM/yyyy' }}</span>
         </div>
-        
+
         <div class="quiz-actions">
-          <a [routerLink]="['/question-management', quiz.id]" class="btn btn-secondary">
+          <a [routerLink]="['/admin/question-management', quiz.id]" class="btn btn-secondary">
             📝 Questions
           </a>
+
           <button class="btn btn-secondary" (click)="editQuiz(quiz)">
             ✏️ Modifier
           </button>
@@ -69,48 +71,32 @@
     <h2 class="modal-title">
       {{ editingQuiz ? 'Modifier le Quiz' : 'Créer un nouveau Quiz' }}
     </h2>
-    
+
     <form (ngSubmit)="editingQuiz ? updateQuiz() : createQuiz()">
       <div class="form-group">
         <label class="form-label">Titre du quiz</label>
-        <input 
-          type="text" 
-          class="form-input" 
-          [ngModel]="editingQuiz ? editingQuiz.title : newQuiz.title"
-          (ngModelChange)="editingQuiz ? (editingQuiz.title = $event) : (newQuiz.title = $event)"
-          name="title"
-          required
-          placeholder="Ex: JavaScript Fundamentals"
-        >
+        <input type="text" class="form-input" [ngModel]="editingQuiz ? editingQuiz.title : newQuiz.title"
+          (ngModelChange)="editingQuiz ? (editingQuiz.title = $event) : (newQuiz.title = $event)" name="title" required
+          placeholder="Ex: JavaScript Fundamentals">
       </div>
-      
+
       <div class="form-group">
         <label class="form-label">Description</label>
-        <textarea 
-          class="form-textarea" 
-          [ngModel]="editingQuiz ? editingQuiz.description : newQuiz.description"
+        <textarea class="form-textarea" [ngModel]="editingQuiz ? editingQuiz.description : newQuiz.description"
           (ngModelChange)="editingQuiz ? (editingQuiz.description = $event) : (newQuiz.description = $event)"
-          name="description"
-          required
-          rows="4"
-          placeholder="Décrivez le contenu et les objectifs du quiz..."
-        ></textarea>
+          name="description" required rows="4" placeholder="Décrivez le contenu et les objectifs du quiz..."></textarea>
       </div>
-      
+
       <div class="form-group">
         <label class="form-label">Statut</label>
-        <select 
-          class="form-select" 
-          [ngModel]="editingQuiz ? editingQuiz.status : newQuiz.status"
-          (ngModelChange)="editingQuiz ? (editingQuiz.status = $event) : (newQuiz.status = $event)"
-          name="status"
-        >
+        <select class="form-select" [ngModel]="editingQuiz ? editingQuiz.status : newQuiz.status"
+          (ngModelChange)="editingQuiz ? (editingQuiz.status = $event) : (newQuiz.status = $event)" name="status">
           <option value="draft">Brouillon</option>
           <option value="active">Actif</option>
           <option value="archived">Archivé</option>
         </select>
       </div>
-      
+
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">
           Annuler

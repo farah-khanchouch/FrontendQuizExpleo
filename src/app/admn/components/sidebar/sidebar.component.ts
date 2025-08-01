@@ -12,25 +12,25 @@ import { RouterModule, Router } from '@angular/router';
 export class SidebarComponent {
   menuItems = [
     { 
-      icon: '📊', 
+      icon: '', 
       label: 'Dashboard', 
       route: '/admin/dashboard',
       description: 'Vue d\'ensemble'
     },
     { 
-      icon: '🎯', 
+      icon: '', 
       label: 'Quiz', 
       route: '/admin/quiz-management',
       description: 'Gestion des quiz'
     },
     { 
-      icon: '👥', 
+      icon: '', 
       label: 'Collaborateurs', 
       route: '/admin/user-management',
       description: 'Gestion des utilisateurs'
     },
     { 
-      icon: '🏆', 
+      icon: '', 
       label: 'Badges', 
       route: '/admin/badge-management',
       description: 'Récompenses'

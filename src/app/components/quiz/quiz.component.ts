@@ -35,9 +35,11 @@ export class QuizComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const quizId = this.route.snapshot.params['id'];
+    const quizId = this.route.snapshot.params['quizId'];
+    console.log('quizId from route:', quizId);
     this.loadQuiz(quizId);
   }
+  
 
   loadQuiz(quizId: string): void {
     this.quizService.getQuizById(quizId).subscribe(
@@ -71,8 +73,10 @@ export class QuizComponent implements OnInit {
     if (!this.selectedAnswer) return;
 
     this.showResult = true;
-    this.answers[this.currentQuestion.id] = this.selectedAnswer;
-
+    if (this.currentQuestion?.id !== undefined) {
+      this.answers[this.currentQuestion.id] = this.selectedAnswer;
+    }
+    
     if (this.selectedAnswer === this.currentQuestion.correctAnswer) {
       this.score += this.currentQuestion.points;
     }

@@ -1,18 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { QuizService } from '../../../services/quiz.service';
+import { Quiz } from '../../../../models/quiz.model';
+import { Router } from '@angular/router'; // Ajoutez cet import
 
-interface Quiz {
-  id: number;
-  title: string;
-  description: string;
-  questions: number;
-  status: 'active' | 'draft' | 'archived';
-  createdAt: Date;
-  participants: number;
-  averageScore: number;
-}
+
 
 @Component({
   selector: 'app-quiz-management',
@@ -21,7 +15,10 @@ interface Quiz {
   templateUrl: './quiz-management.component.html',
   styleUrls: ['./quiz-management.component.css', '../../global_styles.css']
 })
-export class QuizManagementComponent {
+
+export class QuizManagementComponent implements OnInit  {
+  constructor(private quizService: QuizService, private router: Router) {}
+
   showCreateModal = false;
   editingQuiz: Quiz | null = null;
   
@@ -31,38 +28,8 @@ export class QuizManagementComponent {
     status: 'draft' as 'active' | 'draft' | 'archived'
   };
 
-  quizzes: Quiz[] = [
-    {
-      id: 1,
-      title: 'JavaScript Fundamentals',
-      description: 'Test des connaissances de base en JavaScript',
-      questions: 15,
-      status: 'active',
-      createdAt: new Date('2024-01-15'),
-      participants: 42,
-      averageScore: 78
-    },
-    {
-      id: 2,
-      title: 'Angular Basics',
-      description: 'Introduction au framework Angular',
-      questions: 12,
-      status: 'active',
-      createdAt: new Date('2024-01-20'),
-      participants: 35,
-      averageScore: 85
-    },
-    {
-      id: 3,
-      title: 'CSS Grid & Flexbox',
-      description: 'Maîtrise des layouts CSS modernes',
-      questions: 10,
-      status: 'draft',
-      createdAt: new Date('2024-01-25'),
-      participants: 0,
-      averageScore: 0
-    }
-  ];
+  quizzes: Quiz[] = [];
+
 
   openCreateModal() {
     this.showCreateModal = true;
@@ -75,21 +42,37 @@ export class QuizManagementComponent {
   }
 
   createQuiz() {
-    if (this.newQuiz.title && this.newQuiz.description) {
-      const quiz: Quiz = {
-        id: Math.max(...this.quizzes.map(q => q.id)) + 1,
-        title: this.newQuiz.title,
-        description: this.newQuiz.description,
-        questions: 0,
-        status: this.newQuiz.status,
-        createdAt: new Date(),
-        participants: 0,
-        averageScore: 0
-      };
-      this.quizzes.push(quiz);
-      this.closeModal();
-    }
+  if (this.newQuiz.title && this.newQuiz.description) {
+    console.log('Données à envoyer:', this.newQuiz); // Debug
+    
+    this.quizService.createQuiz(this.newQuiz).subscribe({
+      next: (response) => {
+        console.log('Réponse complète du backend:', response); // IMPORTANT: voir la structure
+
+        // Récupérer l'ID du quiz créé de façon sûre
+        const quizId = (response as any)._id || (response as any).id;
+        console.log('ID récupéré:', quizId); // Debug
+
+        if (quizId) {
+          this.quizzes.push(response as Quiz);
+          this.closeModal();
+          this.router.navigate(['/admin/question-management', quizId]);
+        } else {
+          console.error('Aucun ID trouvé dans la réponse:', response);
+          alert('Quiz créé mais impossible de récupérer son ID');
+        }
+      },
+      error: (err) => {
+        console.error('Erreur complète:', err);
+        console.error('Status:', err.status);
+        console.error('Message:', err.message);
+        console.error('Error body:', err.error);
+        alert('Erreur lors de la création du quiz. Veuillez réessayer.');
+      }
+    });
   }
+}
+
 
   editQuiz(quiz: Quiz) {
     this.editingQuiz = { ...quiz };
@@ -98,32 +81,86 @@ export class QuizManagementComponent {
 
   updateQuiz() {
     if (this.editingQuiz) {
-      const index = this.quizzes.findIndex(q => q.id === this.editingQuiz!.id);
-      if (index !== -1) {
-        this.quizzes[index] = { ...this.editingQuiz };
+      this.quizService.updateQuiz(this.editingQuiz.id.toString(), this.editingQuiz).subscribe({
+        next: (updatedQuiz) => {
+          // Ensure both ids are compared as numbers
+          const index = this.quizzes.findIndex(q => q.id === updatedQuiz.id);
+          if (index !== -1) {
+            // Only update allowed fields, keep questions as id (number) if that's the Quiz type
+            this.quizzes[index] = {
+              ...this.quizzes[index],
+              ...updatedQuiz,
+              id: updatedQuiz.id,
+              questions: this.quizzes[index].questions // preserve questions as number (id)
+            };
+          }
+        },
+        error: (err) => {
+          this.closeModal();
+          console.error('Erreur lors de la mise à jour du quiz:', err);
+          alert('Erreur lors de la mise à jour du quiz.');
+        }
+      });
+    }
+  }
+  
+  ngOnInit() {
+    this.loadQuizzes();
+  }
+  
+  loadQuizzes() {
+    this.quizService.getQuizzes().subscribe({
+      next: (quizzes) => {
+        this.quizzes = quizzes;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des quiz:', err);
+        alert('Erreur lors du chargement des quiz.');
       }
-      this.closeModal();
-    }
+    });
   }
-
-  deleteQuiz(quizId: number) {
+  
+  deleteQuiz(quizId: string) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce quiz ?')) {
-      this.quizzes = this.quizzes.filter(q => q.id !== quizId);
+      this.quizService.deleteQuiz(quizId).subscribe({
+        next: () => {
+          this.quizzes = this.quizzes.filter(q => q.id !== quizId);
+        },
+        error: (err) => {
+          console.error('Erreur lors de la suppression du quiz:', err);
+          alert('Erreur lors de la suppression du quiz.');
+        }
+      });
     }
   }
-
+  
+  
+  
   duplicateQuiz(quiz: Quiz) {
-    const duplicated: Quiz = {
-      ...quiz,
-      id: Math.max(...this.quizzes.map(q => q.id)) + 1,
+    // On enlève l'id avant d’envoyer la copie
+    const { id, ...quizSansId } = quiz;
+  
+    const duplicated: Partial<Quiz> = {
+      ...quizSansId,
       title: `${quiz.title} (Copie)`,
       status: 'draft',
       createdAt: new Date(),
       participants: 0,
       averageScore: 0
     };
-    this.quizzes.push(duplicated);
+  
+    this.quizService.createQuiz(duplicated).subscribe({
+      next: (newQuiz) => {
+        this.quizzes.push(newQuiz); // On ajoute la nouvelle copie à la liste
+      },
+      error: (err) => {
+        console.error('Erreur lors de la duplication :', err);
+        alert('Échec de la duplication du quiz.');
+      }
+    });
   }
+  
+  
 
   getStatusBadgeClass(status: string): string {
     switch (status) {
@@ -133,6 +170,7 @@ export class QuizManagementComponent {
       default: return 'badge-warning';
     }
   }
+  
 
   getStatusLabel(status: string): string {
     switch (status) {

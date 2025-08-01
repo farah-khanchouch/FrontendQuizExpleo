@@ -92,17 +92,21 @@
           <div class="questions-overview">
             <h3>Questions</h3>
             <div class="questions-grid">
-              <div 
-                *ngFor="let question of quiz.questions; let i = index"
-                class="question-bubble"
-                [class.current]="i === currentQuestionIndex"
-                [class.completed]="answers[question.id] !== undefined"
-                [class.correct]="answers[question.id] === question.correctAnswer"
-                [class.incorrect]="answers[question.id] !== undefined && answers[question.id] !== question.correctAnswer"
-              >
-                {{ i + 1 }}
-              </div>
+              <ng-container *ngFor="let question of quiz.questions; let i = index">
+                <div 
+                  *ngIf="question.id !== undefined"
+                  class="question-bubble"
+                  [class.current]="i === currentQuestionIndex"
+                  [class.completed]="answers[question.id] !== undefined"
+                  [class.correct]="answers[question.id] === question.correctAnswer"
+                  [class.incorrect]="answers[question.id] !== undefined && answers[question.id] !== question.correctAnswer"
+                >
+                  {{ i + 1 }}
+                </div>
+              </ng-container>
             </div>
+            
+            
           </div>
         </div>
       </div>

@@ -14,7 +14,11 @@ body {
 
 /* Variables CSS pour la charte graphique claire */
 :root {
+  --dark-grey: #1F2937;
+  --light-grey-1: #4B5563;
+  --light-grey-2: #9CA3AF;
   --purple: #6846C6;
+  --white: #fff;
   --white: #FFFFFF;
   --light-grey: #F8F9FA;
   --medium-grey: #E9ECEF;

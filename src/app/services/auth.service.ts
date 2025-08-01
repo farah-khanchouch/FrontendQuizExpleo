@@ -62,18 +62,23 @@ export class AuthService {
   }
 
   getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
-  }
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      this.currentUserSubject.next(user);
+      return user;
+    }
+    return null;  }
 
   
-  isAuthenticated(): boolean {
-    return this.currentUserSubject.value !== null;
-  }
-
-  isAdmin(): boolean {
-    const user = this.getCurrentUser();
-    return user?.role === 'admin';
-  }
+    isAuthenticated(): boolean {
+      return this.getCurrentUser() !== null;
+    }
+    
+    isAdmin(): boolean {
+      const user = this.getCurrentUser();
+      return user?.role === 'admin';
+    }
   register(userData: {
     fullname: string,
     email: string,
