@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
+import { QuizService } from '../../../services/quiz.service';
+import { UserService } from '../../../services/user.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -9,25 +10,95 @@ import { RouterModule } from '@angular/router';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css', '../../global_styles.css']
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
+  constructor(private userService: UserService, private quizService: QuizService) {}
+
   stats = {
-    totalQuizzes: 12,
-    activeUsers: 85,
-    averageScore: 78,
-    totalBadges: 15
+    active: 0,
+    activeUsers: 0,
+    totalUsers: 0,
+    inactiveUsers: 0,
+    blockedUsers: 0,
+    // Ajoutez d'autres stats si nécessaire
+    totalQuizzes: 0,
+    completedQuizzes: 0,
+    averageScore: 0
   };
 
-  recentActivity = [
-    { user: 'Marie Dupont', action: 'Terminé le quiz "JavaScript Basics"', score: 92, time: '2 min' },
-    { user: 'Thomas Martin', action: 'Obtenu le badge "Quiz Master"', score: null, time: '5 min' },
-    { user: 'Sophie Bernard', action: 'Commencé le quiz "Angular Avancé"', score: null, time: '8 min' },
-    { user: 'Lucas Moreau', action: 'Terminé le quiz "CSS Flexbox"', score: 87, time: '12 min' }
-  ];
 
-  topPerformers = [
-    { name: 'Marie Dupont', score: 94, quizzes: 8, badges: 5 },
-    { name: 'Jean-Pierre Leroy', score: 91, quizzes: 12, badges: 7 },
-    { name: 'Alice Roux', score: 89, quizzes: 6, badges: 4 },
-    { name: 'Paul Durand', score: 86, quizzes: 9, badges: 6 }
-  ];
+  ngOnInit() {
+      this.loadQuizzes(); // ou quel que soit ton nom de méthode
+    
+    this.loadUserStats();
+  }
+
+  loadUserStats() {
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        console.log('Utilisateurs chargés pour le dashboard:', users.length);
+        
+        // Calcul des statistiques
+        this.stats.totalUsers = users.length;
+        this.stats.activeUsers = users.filter(u => u.status === 'active').length;
+        this.stats.inactiveUsers = users.filter(u => u.status === 'inactive').length;
+        this.stats.blockedUsers = users.filter(u => u.status === 'blocked').length;
+        
+        // Stats supplémentaires si vous en avez besoin
+        this.stats.totalQuizzes = users.reduce((sum, u) => sum + (u.totalQuizzes || 0), 0);
+        this.stats.completedQuizzes = users.reduce((sum, u) => sum + (u.completedQuizzes || 0), 0);
+        
+        // Score moyen
+        const usersWithScores = users.filter(u => u.averageScore && u.averageScore > 0);
+        if (usersWithScores.length > 0) {
+          this.stats.averageScore = Math.round(
+            usersWithScores.reduce((sum, u) => sum + (u.averageScore || 0), 0) / usersWithScores.length
+          );
+        }
+
+        console.log('Stats calculées:', this.stats);
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des stats utilisateurs:', error);
+        // Valeurs par défaut en cas d'erreur
+        this.stats = {
+          active: 0,
+          activeUsers: 0,
+          totalUsers: 0,
+          inactiveUsers: 0,
+          blockedUsers: 0,
+          totalQuizzes: 0,
+          completedQuizzes: 0,
+          averageScore: 0
+        };
+      }
+    });
+  }
+
+  // Méthode pour actualiser les stats (optionnel)
+  refreshStats() {
+    this.loadUserStats();
+  }
+
+  // Méthodes utilitaires pour le template
+  getCompletionPercentage(): number {
+    if (this.stats.totalQuizzes === 0) return 0;
+    return Math.round((this.stats.completedQuizzes / this.stats.totalQuizzes) * 100);
+  }
+
+  getActiveUserPercentage(): number {
+    if (this.stats.totalUsers === 0) return 0;
+    return Math.round((this.stats.activeUsers / this.stats.totalUsers) * 100);
+  }
+  
+  quizzes: any[] = []; // ⬅️ ajoute cette ligne
+
+
+  
+
+  loadQuizzes() {
+    this.quizService.getQuizzes().subscribe((data: any[]) => {
+      this.quizzes = data;
+    });
+  }
 }
+

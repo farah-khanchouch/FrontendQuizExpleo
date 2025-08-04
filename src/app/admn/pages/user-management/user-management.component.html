@@ -7,6 +7,7 @@
     <button class="btn btn-secondary" (click)="exportUsers()">
       📊 Exporter
     </button>
+    
   </div>
 
   <!-- Statistiques -->
@@ -48,7 +49,7 @@
           <option value="blocked">Bloqués</option>
         </select>
         <select class="form-select" [(ngModel)]="departmentFilter">
-          <option value="all">Tous les départements</option>
+          <option value="all">Tous les CBUs</option>
           <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
         </select>
       </div>
@@ -60,11 +61,11 @@
     <div class="users-grid">
       <div class="user-card" *ngFor="let user of filteredUsers">
         <div class="user-header">
-          <div class="user-avatar">{{ user.name.charAt(0) }}</div>
+          <div class="user-avatar">{{ user.username.charAt(0) }}</div>
           <div class="user-info">
-            <h3 class="user-name">{{ user.name }}</h3>
+            <h3 class="user-name">{{ user.username }}</h3>
             <p class="user-email">{{ user.email }}</p>
-            <p class="user-department">{{ user.department }}</p>
+            <p class="user-department">{{ user.cbu }}</p>
           </div>
           <div class="user-status">
             <span class="badge" [class]="getStatusBadgeClass(user.status)">

@@ -1,20 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  department: string;
-  joinedAt: Date;
-  totalQuizzes: number;
-  completedQuizzes: number;
-  averageScore: number;
-  badges: number;
-  status: 'active' | 'inactive' | 'blocked';
-  lastActivity: Date;
-}
+import { UserService } from '../../../services/user.service';
+import { User } from '../../../services/user.service';
 
 @Component({
   selector: 'app-user-management',
@@ -23,120 +11,131 @@ interface User {
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.css', '../../global_styles.css']
 })
-export class UserManagementComponent {
+
+export class UserManagementComponent implements OnInit {
+  users: User[] = [];
+  departments: string[] = [];
   searchTerm = '';
   statusFilter = 'all';
   departmentFilter = 'all';
   
-  users: User[] = [
-    {
-      id: 1,
-      name: 'Marie Dupont',
-      email: 'marie.dupont@company.com',
-      department: 'Développement',
-      joinedAt: new Date('2024-01-10'),
-      totalQuizzes: 12,
-      completedQuizzes: 8,
-      averageScore: 94,
-      badges: 5,
-      status: 'active',
-      lastActivity: new Date('2024-01-28')
-    },
-    {
-      id: 2,
-      name: 'Jean-Pierre Leroy',
-      email: 'jp.leroy@company.com',
-      department: 'Marketing',
-      joinedAt: new Date('2024-01-05'),
-      totalQuizzes: 12,
-      completedQuizzes: 12,
-      averageScore: 91,
-      badges: 7,
-      status: 'active',
-      lastActivity: new Date('2024-01-27')
-    },
-    {
-      id: 3,
-      name: 'Alice Roux',
-      email: 'alice.roux@company.com',
-      department: 'Design',
-      joinedAt: new Date('2024-01-15'),
-      totalQuizzes: 12,
-      completedQuizzes: 6,
-      averageScore: 89,
-      badges: 4,
-      status: 'active',
-      lastActivity: new Date('2024-01-26')
-    },
-    {
-      id: 4,
-      name: 'Paul Durand',
-      email: 'paul.durand@company.com',
-      department: 'Développement',
-      joinedAt: new Date('2024-01-20'),
-      totalQuizzes: 12,
-      completedQuizzes: 9,
-      averageScore: 86,
-      badges: 6,
-      status: 'active',
-      lastActivity: new Date('2024-01-25')
-    },
-    {
-      id: 5,
-      name: 'Sophie Bernard',
-      email: 'sophie.bernard@company.com',
-      department: 'RH',
-      joinedAt: new Date('2024-01-12'),
-      totalQuizzes: 12,
-      completedQuizzes: 3,
-      averageScore: 75,
-      badges: 2,
-      status: 'inactive',
-      lastActivity: new Date('2024-01-20')
-    }
-  ];
+  constructor(private userService: UserService) {}
 
-  departments = ['Développement', 'Marketing', 'Design', 'RH'];
-
-  get filteredUsers() {
-    return this.users.filter(user => {
-      const matchesSearch = user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
-      const matchesStatus = this.statusFilter === 'all' || user.status === this.statusFilter;
-      const matchesDepartment = this.departmentFilter === 'all' || user.department === this.departmentFilter;
+  ngOnInit() {
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        console.log('Utilisateurs récupérés:', users); // Pour debug
+        this.users = users;
+        this.departments = [...new Set(users.map(u => u.cbu || 'Non défini'))];
+        console.log('Nombre d\'utilisateurs:', this.users.length);
+        console.log('Départements:', this.departments);
+      },
       
-      return matchesSearch && matchesStatus && matchesDepartment;
+      error: (error) => {
+        console.error('Erreur lors du chargement des utilisateurs:', error);
+      }
     });
   }
+  toggleUserStatus(user: User) {
+    const newStatus = user.status === 'active' ? 'inactive' : 'active';
+    this.userService.updateUser(user.id, { status: newStatus }).subscribe(updated => {
+      user.status = updated.status;
+    });
+  }
+  
+  
+  get filteredUsers() {
+    if (!this.users || this.users.length === 0) {
+      console.log('Aucun utilisateur à filtrer');
+      return [];
+    }
 
+    const filtered = this.users.filter(user => {
+      // Protection contre les valeurs undefined/null
+      const username = user.username || '';
+      const email = user.email || '';
+      const cbu = user.cbu || '';
+      const status = user.status || 'inactive';
+
+      // Filtre de recherche
+      const matchesSearch = !this.searchTerm || 
+                           username.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                           email.toLowerCase().includes(this.searchTerm.toLowerCase());
+      
+      // Filtre de statut
+      const matchesStatus = this.statusFilter === 'all' || status === this.statusFilter;
+      
+      // Filtre de département
+      const matchesDepartment = this.departmentFilter === 'all' || cbu === this.departmentFilter;
+
+      return matchesSearch && matchesStatus && matchesDepartment;
+    });
+
+    console.log('Filtres appliqués:', {
+      searchTerm: this.searchTerm,
+      statusFilter: this.statusFilter,
+      departmentFilter: this.departmentFilter
+    });
+    console.log('Utilisateurs filtrés:', filtered.length, 'sur', this.users.length);
+    return filtered;
+  }
   get stats() {
+    if (!this.users || this.users.length === 0) {
+      return {
+        total: 0,
+        active: 0,
+        inactive: 0,
+        averageCompletion: 0
+      };
+    }
+
+    const total = this.users.length;
+    const active = this.users.filter(u => u.status === 'active').length;
+    const inactive = this.users.filter(u => u.status === 'inactive').length;
+    
+    // Calcul sécurisé de la completion moyenne
+    const validUsers = this.users.filter(u => u.totalQuizzes && u.totalQuizzes > 0);
+    let averageCompletion = 0;
+    
+    if (validUsers.length > 0) {
+      const totalCompletion = validUsers.reduce((sum, u) => {
+        const completion = (u.completedQuizzes || 0) / u.totalQuizzes * 100;
+        return sum + completion;
+      }, 0);
+      averageCompletion = Math.round(totalCompletion / validUsers.length);
+    }
+
     return {
-      total: this.users.length,
-      active: this.users.filter(u => u.status === 'active').length,
-      inactive: this.users.filter(u => u.status === 'inactive').length,
-      averageCompletion: Math.round(
-        this.users.reduce((sum, u) => sum + (u.completedQuizzes / u.totalQuizzes * 100), 0) / this.users.length
-      )
+      total,
+      active,
+      inactive,
+      averageCompletion
     };
   }
 
-  toggleUserStatus(user: User) {
-    if (user.status === 'active') {
-      user.status = 'inactive';
-    } else if (user.status === 'inactive') {
-      user.status = 'active';
-    }
-  }
-
   blockUser(user: User) {
-    if (confirm(`Êtes-vous sûr de vouloir bloquer ${user.name} ?`)) {
-      user.status = 'blocked';
+    if (confirm(`Êtes-vous sûr de vouloir bloquer ${user.username} ?`)) {
+      this.userService.updateUser(user.id, { status: 'blocked' }).subscribe({
+        next: (updated) => {
+          user.status = updated.status;
+        },
+        error: (error) => {
+          console.error('Erreur lors du blocage:', error);
+        }
+      });
     }
   }
 
-  deleteUser(userId: number) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) {
-      this.users = this.users.filter(u => u.id !== userId);
+  deleteUser(userId: string) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+      this.userService.deleteUser(userId).subscribe({
+        next: () => {
+          this.users = this.users.filter(u => u.id !== userId);
+        },
+        error: (error) => {
+          console.error('Erreur lors de la suppression:', error);
+        }
+      });
     }
   }
 
@@ -157,18 +156,34 @@ export class UserManagementComponent {
       default: return status;
     }
   }
-
   getCompletionRate(user: User): number {
-    return Math.round((user.completedQuizzes / user.totalQuizzes) * 100);
+    if (!user.totalQuizzes || user.totalQuizzes === 0) {
+      return 0;
+    }
+    return Math.round(((user.completedQuizzes || 0) / user.totalQuizzes) * 100);
   }
-
   exportUsers() {
     // Simulation d'export
     const csvData = this.filteredUsers.map(user => 
-      `${user.name},${user.email},${user.department},${user.averageScore},${this.getCompletionRate(user)}%`
+      `${user.username},${user.email},${user.cbu},${user.averageScore},${this.getCompletionRate(user)}%`
     ).join('\n');
     
     console.log('Export CSV:', csvData);
     alert('Export des données en cours... (simulation)');
+  }
+  // Méthodes de debug utiles
+  debugFilters() {
+    console.log('=== DEBUG FILTRES ===');
+    console.log('Total users:', this.users.length);
+    console.log('Search term:', this.searchTerm);
+    console.log('Status filter:', this.statusFilter);
+    console.log('Department filter:', this.departmentFilter);
+    console.log('Filtered users:', this.filteredUsers.length);
+    console.log('Users data sample:', this.users.slice(0, 2));
+  }
+
+  // Méthode pour forcer la mise à jour (debug)
+  refreshData() {
+    this.ngOnInit();
   }
 }

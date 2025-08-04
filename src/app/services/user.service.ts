@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+
 
 // Modèle User simple (tu peux ajuster)
 export interface User {
@@ -10,49 +12,45 @@ export interface User {
   avatar?: string;
   cbu?: string;
   totalPoints?: number;
+  joinedAt: string;           // format ISO (ex: '2024-01-01T00:00:00Z')
+  totalQuizzes: number;
+  completedQuizzes: number;
+  averageScore: number;
+  badges: number;
+  status: 'active' | 'inactive' | 'blocked';
+  lastActivity: string; 
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  private apiUrl = 'http://localhost:3000/api/users'; // 🔁 À adapter selon ton backend
 
-  // Données fictives en mémoire
-  private users: User[] = [
-    {
-      id: '123',
-      username: 'Farah Farah',
-      email: 'farah@example.com',
-      avatar: 'https://i.pravatar.cc/150?img=3',
-      cbu: 'Marketing',
-      totalPoints: 2500
-    },
-    {
-      id: '456',
-      username: 'John Doe',
-      email: 'john@example.com',
-      avatar: 'https://i.pravatar.cc/150?img=5',
-      cbu: 'Développement',
-      totalPoints: 1800
-    }
-  ];
+  constructor(private http: HttpClient) {}
 
-  constructor() {}
-
-  // Récupérer un utilisateur par ID (simulate HTTP)
-  getUserById(id: string): Observable<User | null> {
-    const user = this.users.find(u => u.id === id) || null;
-    // Simule un délai réseau de 500ms
-    return of(user).pipe(delay(500));
+  // ✅ Récupérer tous les utilisateurs
+  getAllUsers(): Observable<User[]> {
+    return this.http.get<User[]>(this.apiUrl);
   }
 
-  // Met à jour un utilisateur (simulate HTTP)
-  updateUser(id: string, updatedUser: User): Observable<User | null> {
-    const index = this.users.findIndex(u => u.id === id);
-    if (index !== -1) {
-      this.users[index] = { ...updatedUser, id };
-      return of(this.users[index]).pipe(delay(500));
-    }
-    return of(null).pipe(delay(500));
+  // ✅ Récupérer un utilisateur par ID
+  getUserById(id: string): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${id}`);
+  }
+
+  // ✅ Mettre à jour un utilisateur (statut, données...)
+  updateUser(id: string, updatedUser: Partial<User>): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/${id}`, updatedUser);
+  }
+
+  // ✅ Supprimer un utilisateur
+  deleteUser(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  // ✅ Créer un utilisateur (optionnel)
+  createUser(user: User): Observable<User> {
+    return this.http.post<User>(this.apiUrl, user);
   }
 }
