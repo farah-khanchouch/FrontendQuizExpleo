@@ -1,19 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Badge {
-  id: number;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  criteria: string;
-  isActive: boolean;
-  createdAt: Date;
-  earnedBy: number;
-  type: 'achievement' | 'milestone' | 'special';
-}
+import { BadgeService } from '../../../services/badge.service';
+import { Badge } from '../../../../models/quiz.model';
 
 @Component({
   selector: 'app-badge-management',
@@ -22,10 +11,12 @@ interface Badge {
   templateUrl: './badge-management.component.html',
   styleUrls: ['./badge-management.component.css', '../../global_styles.css']
 })
-export class BadgeManagementComponent {
+export class BadgeManagementComponent implements OnInit {
   showCreateModal = false;
   editingBadge: Badge | null = null;
-  
+  badges: Badge[] = [];
+  loading = false;
+
   newBadge = {
     name: '',
     description: '',
@@ -38,71 +29,29 @@ export class BadgeManagementComponent {
   availableIcons = ['🏆', '🥇', '🎯', '⭐', '💎', '🔥', '⚡', '🚀', '🎖️', '👑', '🥈', '🥉'];
   availableColors = ['#6846C6', '#059669', '#DC2626', '#D97706', '#7C3AED', '#0891B2', '#BE185D'];
 
-  badges: Badge[] = [
-    {
-      id: 1,
-      name: 'Premier Pas',
-      description: 'Terminer son premier quiz',
-      icon: '🎯',
-      color: '#059669',
-      criteria: 'Compléter 1 quiz',
-      isActive: true,
-      createdAt: new Date('2024-01-01'),
-      earnedBy: 85,
-      type: 'milestone'
-    },
-    {
-      id: 2,
-      name: 'Expert JavaScript',
-      description: 'Maîtrise parfaite du JavaScript',
-      icon: '⚡',
-      color: '#D97706',
-      criteria: 'Score > 90% sur tous les quiz JS',
-      isActive: true,
-      createdAt: new Date('2024-01-02'),
-      earnedBy: 12,
-      type: 'achievement'
-    },
-    {
-      id: 3,
-      name: 'Quiz Master',
-      description: 'Compléter tous les quiz disponibles',
-      icon: '👑',
-      color: '#7C3AED',
-      criteria: 'Compléter 100% des quiz',
-      isActive: true,
-      createdAt: new Date('2024-01-03'),
-      earnedBy: 3,
-      type: 'special'
-    },
-    {
-      id: 4,
-      name: 'Perfectionniste',
-      description: 'Score parfait sur un quiz difficile',
-      icon: '💎',
-      color: '#BE185D',
-      criteria: 'Score de 100% sur quiz niveau expert',
-      isActive: true,
-      createdAt: new Date('2024-01-04'),
-      earnedBy: 7,
-      type: 'achievement'
-    },
-    {
-      id: 5,
-      name: 'Débutant Motivé',
-      description: 'Compléter 5 quiz en une semaine',
-      icon: '🔥',
-      color: '#0891B2',
-      criteria: '5 quiz en 7 jours',
-      isActive: false,
-      createdAt: new Date('2024-01-05'),
-      earnedBy: 0,
-      type: 'milestone'
-    }
-  ];
+  constructor(private badgeService: BadgeService) {}
+
+  ngOnInit() {
+    this.loadBadges();
+  }
+
+  loadBadges() {
+    this.loading = true;
+    this.badgeService.getBadges().subscribe({
+      next: (data) => {
+        this.badges = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des badges', err);
+        this.loading = false;
+      }
+    });
+  }
 
   openCreateModal() {
     this.showCreateModal = true;
+    this.editingBadge = null;
     this.newBadge = {
       name: '',
       description: '',
@@ -119,22 +68,22 @@ export class BadgeManagementComponent {
   }
 
   createBadge() {
-    if (this.newBadge.name && this.newBadge.description) {
-      const badge: Badge = {
-        id: Math.max(...this.badges.map(b => b.id)) + 1,
-        name: this.newBadge.name,
-        description: this.newBadge.description,
-        icon: this.newBadge.icon,
-        color: this.newBadge.color,
-        criteria: this.newBadge.criteria,
-        type: this.newBadge.type,
-        isActive: true,
-        createdAt: new Date(),
-        earnedBy: 0
-      };
-      this.badges.push(badge);
-      this.closeModal();
-    }
+    const badgePayload = {
+      ...this.newBadge,
+      isActive: true,
+      createdAt: new Date(),
+      earnedBy: 0
+    };
+
+    this.badgeService.createBadge(badgePayload).subscribe({
+      next: (created) => {
+        this.badges.push(created);
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error('Erreur création badge', err);
+      }
+    });
   }
 
   editBadge(badge: Badge) {
@@ -143,35 +92,61 @@ export class BadgeManagementComponent {
   }
 
   updateBadge() {
-    if (this.editingBadge) {
-      const index = this.badges.findIndex(b => b.id === this.editingBadge!.id);
-      if (index !== -1) {
-        this.badges[index] = { ...this.editingBadge };
+    if (!this.editingBadge) return;
+
+    this.badgeService.updateBadge(this.editingBadge.id, this.editingBadge).subscribe({
+      next: (updated) => {
+        const index = this.badges.findIndex(b => b.id === updated.id);
+        if (index !== -1) this.badges[index] = updated;
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error('Erreur mise à jour badge', err);
       }
-      this.closeModal();
-    }
+    });
   }
 
-  deleteBadge(badgeId: number) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce badge ?')) {
-      this.badges = this.badges.filter(b => b.id !== badgeId);
-    }
+  deleteBadge(badgeId: string) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce badge ?')) return;
+
+    this.badgeService.deleteBadge(badgeId).subscribe({
+      next: () => {
+        this.badges = this.badges.filter(b => b.id !== badgeId);
+      },
+      error: (err) => {
+        console.error('Erreur suppression badge', err);
+      }
+    });
   }
 
   toggleBadgeStatus(badge: Badge) {
-    badge.isActive = !badge.isActive;
+    this.badgeService.toggleBadgeActivation(badge.id, !badge.isActive).subscribe({
+      next: (updated) => {
+        badge.isActive = updated.isActive;
+      },
+      error: (err) => {
+        console.error('Erreur activation badge', err);
+      }
+    });
   }
 
   duplicateBadge(badge: Badge) {
-    const duplicated: Badge = {
+    const duplicated = {
       ...badge,
-      id: Math.max(...this.badges.map(b => b.id)) + 1,
-      name: `${badge.name} (Copie)`,
-      createdAt: new Date(),
+      name: badge.name + ' (Copie)',
+      isActive: false,
       earnedBy: 0,
-      isActive: false
+      createdAt: new Date()
     };
-    this.badges.push(duplicated);
+
+    this.badgeService.createBadge(duplicated).subscribe({
+      next: (newBadge) => {
+        this.badges.push(newBadge);
+      },
+      error: (err) => {
+        console.error('Erreur duplication badge', err);
+      }
+    });
   }
 
   getTypeBadgeClass(type: string): string {

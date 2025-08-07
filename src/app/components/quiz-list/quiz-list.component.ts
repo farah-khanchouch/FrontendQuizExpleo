@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { QuizService } from '../../services/quiz.service';
 import { Quiz } from '../../../models/quiz.model';
@@ -17,22 +18,24 @@ export class QuizListComponent implements OnInit {
   filteredQuizzes: Quiz[] = [];
   selectedTheme: string = '';
   isLoading = true;
-  
-
-  constructor(private quizService: QuizService) {}
+  editingQuiz: Quiz | null = null;
+  showEditModal = false;
+  constructor(private quizService: QuizService,  private router: Router) {}
 
   ngOnInit(): void {
     this.loadQuizzes();
   }
 
   loadQuizzes(): void {
+    this.isLoading = true;
     this.quizService.getQuizzes().subscribe({
       next: (quizzes) => {
         this.quizzes = quizzes;
         this.filteredQuizzes = quizzes;
         this.isLoading = false;
       },
-      error: () => {
+      error: (error) => {
+        console.error('Erreur lors du chargement des quiz:', error);
         this.isLoading = false;
       }
     });
@@ -51,21 +54,7 @@ export class QuizListComponent implements OnInit {
     return this.quizzes.filter(quiz => quiz.theme === theme).length;
   }
 
-  getThemeIcon(theme: string): string {
-    const icons = {
-      'technique': '💻',
-      'culture': '🏢',
-      'ludique': '🎉'
-    };
-    return icons[theme as keyof typeof icons] || '📚';
-  }
+ 
 
-  getThemeLabel(theme: string): string {
-    const labels = {
-      'technique': 'Technique',
-      'culture': 'Culture',
-      'ludique': 'Ludique'
-    };
-    return labels[theme as keyof typeof labels] || 'Général';
-  }
+ 
 }

@@ -42,13 +42,35 @@ export interface Question {
   points: number;
   quizId?: string;
 }
+export interface BadgeCreateDto {
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  criteria: string;
+  type: 'achievement' | 'milestone' | 'special';
+}
+export interface BadgeUpdateDto {
+  name?: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  criteria?: string;
+  isActive?: boolean;
+  type?: 'achievement' | 'milestone' | 'special';
+}
 
 export interface Badge {
   id: string;
   name: string;
   description: string;
   icon: string;
-  earnedAt: Date;
+  color: string;
+  criteria: string;
+  isActive: boolean;
+  createdAt: string | Date;
+  earnedBy: number;
+  type: 'achievement' | 'milestone' | 'special';
 }
 
 export interface QuizResult {

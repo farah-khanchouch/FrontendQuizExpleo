@@ -1,110 +1,415 @@
 <div class="quiz-management">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Gestion des Quiz</h1>
-      <p class="page-subtitle">Créez et gérez vos questionnaires</p>
-    </div>
-    <button class="btn btn-primary" (click)="openCreateModal()">
-      ➕ Nouveau Quiz
-    </button>
+  <!-- Barre de chargement globale -->
+  <div class="loading-bar" *ngIf="isLoading">
+    <div class="loading-progress"></div>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <h2 class="section-title">Liste des Quiz</h2>
+  <!-- Message d'erreur global -->
+  <div class="error-banner" *ngIf="error" (click)="clearError()">
+    <span class="error-icon">⚠️</span>
+    <span class="error-message">{{ error }}</span>
+    <button class="error-close">✕</button>
+  </div>
+
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">Gestion des Quiz</h1>
+        <p class="page-subtitle">Créez et gérez vos questionnaires de manière dynamique</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ quizzes.length }}</span>
+          <span class="stat-label">Quiz Total</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ getActiveQuizzesCount() }}</span>
+          <span class="stat-label">Actifs</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="loadQuizzes()" [disabled]="isLoading">
+        🔄 Actualiser
+      </button>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        ➕ Nouveau Quiz
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres et Recherche -->
+  <div class="filters-section">
+    <div class="search-bar">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Rechercher un quiz..." 
+        #searchInput
+        (input)="searchQuizzes(searchInput.value)"
+      >
+      <span class="search-icon">🔍</span>
+    </div>
+    
+    <div class="filters">
+      <select class="filter-select" (change)="filterByStatus($event)" #statusFilter>
+        <option value="">Tous les statuts</option>
+        <option value="active">Actifs</option>
+        <option value="draft">Brouillons</option>
+        <option value="archived">Archivés</option>
+      </select>
+      
+      <select class="filter-select" (change)="filterByTheme($event)" #themeFilter>
+        <option value="">Tous les thèmes</option>
+        <option value="technique">Technique</option>
+        <option value="culture">Culture générale</option>
+        <option value="ludique">Ludique</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <!-- État vide -->
+    <div class="empty-state" *ngIf="quizzes.length === 0 && !isLoading">
+      <div class="empty-icon">📋</div>
+      <h3 class="empty-title">Aucun quiz trouvé</h3>
+      <p class="empty-description">Commencez par créer votre premier quiz</p>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        Créer un Quiz
+      </button>
     </div>
 
-    <div class="quiz-grid">
-      <div class="quiz-card" *ngFor="let quiz of quizzes">
+    <!-- Liste des Quiz -->
+    <div class="quiz-grid" *ngIf="quizzes.length > 0">
+      <div 
+        class="quiz-card" 
+        *ngFor="let quiz of quizzes; trackBy: trackQuizById"
+        [class.quiz-loading]="isLoading"
+      >
+        <!-- En-tête du Quiz -->
         <div class="quiz-header">
-          <h3 class="quiz-title">{{ quiz.title }}</h3>
-          <span class="badge" [class]="getStatusBadgeClass(quiz.status)">
-            {{ getStatusLabel(quiz.status) }}
-          </span>
+          <div class="quiz-title-section">
+            <h3 class="quiz-title">{{ quiz.title }}</h3>
+            <div class="quiz-badges">
+              <span class="badge" [class]="getStatusBadgeClass(quiz.status)">
+                {{ getStatusLabel(quiz.status) }}
+              </span>
+              <span class="theme-badge" [class]="getThemeClass(quiz.theme)">
+                {{ getThemeLabel(quiz.theme) }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="quiz-menu">
+            <button class="menu-button" (click)="toggleQuizMenu(quiz.id || quiz._id)">⋮</button>
+            <div class="dropdown-menu" *ngIf="activeMenuId === (quiz.id || quiz._id)">
+              <button (click)="previewQuiz(quiz)">👁️ Prévisualiser</button>
+              <button (click)="toggleQuizStatus(quiz)">
+                {{ quiz.status === 'active' ? '⏸️ Désactiver' : '▶️ Activer' }}
+              </button>
+              <button (click)="duplicateQuiz(quiz)">📋 Dupliquer</button>
+            </div>
+          </div>
         </div>
 
+        <!-- Description -->
         <p class="quiz-description">{{ quiz.description }}</p>
 
+        <!-- Statistiques détaillées -->
         <div class="quiz-stats">
           <div class="stat">
-            <span class="stat-value">{{ quiz.questions}}</span>
-            <span class="stat-label">Questions</span>
+            <div class="stat-icon">❓</div>
+            <div class="stat-content">
+              <span class="stat-value">{{ getQuizStats(quiz).questions }}</span>
+              <span class="stat-label">Questions</span>
+            </div>
           </div>
+          
           <div class="stat">
-            <span class="stat-value">{{ quiz.participants }}</span>
-            <span class="stat-label">Participants</span>
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+              <span class="stat-value">{{ getQuizStats(quiz).participants }}</span>
+              <span class="stat-label">Participants</span>
+            </div>
           </div>
-          <!-- Correction -->
-          <div class="stat" *ngIf="quiz.participants !== undefined && quiz.participants > 0">
-            <span class="stat-value">{{ quiz.averageScore }}%</span>
-            <span class="stat-label">Score moyen</span>
+          
+          <div class="stat" *ngIf="getQuizStats(quiz).participants > 0">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <span class="stat-value">{{ getQuizStats(quiz).averageScore }}%</span>
+              <span class="stat-label">Score moyen</span>
+            </div>
+          </div>
+          
+          <div class="stat">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-content">
+              <span class="stat-value">{{ getQuizStats(quiz).duration }}min</span>
+              <span class="stat-label">Durée</span>
+            </div>
+          </div>
+          
+          <div class="stat">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-content">
+              <span class="stat-value">{{ getQuizStats(quiz).points }}</span>
+              <span class="stat-label">Points max</span>
+            </div>
           </div>
         </div>
 
+        <!-- Barre de progression pour les quiz en cours -->
+        <div class="progress-section" *ngIf="getCompletionRate(quiz) > 0">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getCompletionRate(quiz)"></div>
+          </div>
+          <span class="progress-text">{{ getCompletionRate(quiz) }}% complété</span>
+        </div>
+
+        <!-- Métadonnées -->
         <div class="quiz-meta">
-          <span class="quiz-date">Créé le {{ quiz.createdAt | date:'dd/MM/yyyy' }}</span>
+          <div class="meta-item">
+            <span class="meta-icon">📅</span>
+            <span class="meta-text">{{ quiz.createdAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+          </div>
+          <div class="meta-item" *ngIf="quiz.imageUrl">
+            <span class="meta-icon">🖼️</span>
+            <span class="meta-text">Image incluse</span>
+          </div>
         </div>
 
+        <!-- Actions principales -->
         <div class="quiz-actions">
-          <a [routerLink]="['/admin/question-management', quiz.id]" class="btn btn-secondary">
-            📝 Questions
-          </a>
+          <button 
+            class="btn btn-primary" 
+            (click)="manageQuestions(quiz)"
+            [disabled]="isLoading"
+          >
+            📝 Gérer les Questions
+          </button>
 
-          <button class="btn btn-secondary" (click)="editQuiz(quiz)">
+          <button 
+            class="btn btn-secondary" 
+            (click)="editQuiz(quiz)"
+            [disabled]="isLoading"
+          >
             ✏️ Modifier
           </button>
-          <button class="btn btn-secondary" (click)="duplicateQuiz(quiz)">
-            📋 Dupliquer
-          </button>
-          <button class="btn btn-danger" (click)="deleteQuiz(quiz.id)">
+          
+          <button 
+            class="btn btn-danger" 
+            (click)="deleteQuiz(quiz)"
+            [disabled]="isLoading"
+          >
             🗑️ Supprimer
           </button>
+        </div>
+
+        <!-- Indicateur de synchronisation -->
+        <div class="sync-indicator" *ngIf="isLoading">
+          <div class="sync-spinner"></div>
+          <span>Synchronisation...</span>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal de création/édition -->
+<!-- Modal de création/édition améliorée -->
 <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <h2 class="modal-title">
-      {{ editingQuiz ? 'Modifier le Quiz' : 'Créer un nouveau Quiz' }}
-    </h2>
+  <div class="modal-content enhanced-modal" (click)="$event.stopPropagation()">
+    <!-- En-tête du modal -->
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{ editingQuiz ? '✏️ Modifier le Quiz' : '➕ Créer un nouveau Quiz' }}
+      </h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
 
-    <form (ngSubmit)="editingQuiz ? updateQuiz() : createQuiz()">
-      <div class="form-group">
-        <label class="form-label">Titre du quiz</label>
-        <input type="text" class="form-input" [ngModel]="editingQuiz ? editingQuiz.title : newQuiz.title"
-          (ngModelChange)="editingQuiz ? (editingQuiz.title = $event) : (newQuiz.title = $event)" name="title" required
-          placeholder="Ex: JavaScript Fundamentals">
-      </div>
+    <!-- Contenu du modal -->
+    <div class="modal-body">
+      <form (ngSubmit)="editingQuiz ? updateQuiz() : createQuiz()" #quizForm="ngForm">
+        <!-- Section Informations générales -->
+        <div class="form-section">
+          <h3 class="section-title">📋 Informations générales</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">Titre du quiz</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [ngModel]="editingQuiz ? editingQuiz.title : newQuiz.title"
+                (ngModelChange)="editingQuiz ? (editingQuiz.title = $event) : (newQuiz.title = $event)" 
+                name="title" 
+                required
+                placeholder="Ex: JavaScript Fundamentals"
+                maxlength="100"
+              >
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label class="form-label">Description</label>
-        <textarea class="form-textarea" [ngModel]="editingQuiz ? editingQuiz.description : newQuiz.description"
-          (ngModelChange)="editingQuiz ? (editingQuiz.description = $event) : (newQuiz.description = $event)"
-          name="description" required rows="4" placeholder="Décrivez le contenu et les objectifs du quiz..."></textarea>
-      </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">Description</label>
+              <textarea 
+                class="form-textarea" 
+                [ngModel]="editingQuiz ? editingQuiz.description : newQuiz.description"
+                (ngModelChange)="editingQuiz ? (editingQuiz.description = $event) : (newQuiz.description = $event)"
+                name="description" 
+                required 
+                rows="4" 
+                placeholder="Décrivez le contenu et les objectifs du quiz..."
+                maxlength="500"
+              ></textarea>
+            </div>
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label class="form-label">Statut</label>
-        <select class="form-select" [ngModel]="editingQuiz ? editingQuiz.status : newQuiz.status"
-          (ngModelChange)="editingQuiz ? (editingQuiz.status = $event) : (newQuiz.status = $event)" name="status">
-          <option value="draft">Brouillon</option>
-          <option value="active">Actif</option>
-          <option value="archived">Archivé</option>
-        </select>
-      </div>
+        <!-- Section Configuration -->
+        <div class="form-section">
+          <h3 class="section-title">⚙️ Configuration</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Thème</label>
+              <select 
+                class="form-select" 
+                [ngModel]="editingQuiz ? editingQuiz.theme : newQuiz.theme"
+                (ngModelChange)="editingQuiz ? (editingQuiz.theme = $event) : (newQuiz.theme = $event)" 
+                name="theme"
+              >
+                <option value="technique">🔧 Technique</option>
+                <option value="culture">🎭 Culture générale</option>
+                <option value="ludique">🎮 Ludique</option>
+              </select>
+            </div>
 
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" (click)="closeModal()">
-          Annuler
-        </button>
-        <button type="submit" class="btn btn-primary">
-          {{ editingQuiz ? 'Mettre à jour' : 'Créer le Quiz' }}
-        </button>
-      </div>
-    </form>
+            <div class="form-group">
+              <label class="form-label">Durée (minutes)</label>
+              <input 
+                type="number" 
+                class="form-input" 
+                [ngModel]="editingQuiz ? editingQuiz.duration : newQuiz.duration"
+                (ngModelChange)="editingQuiz ? (editingQuiz.duration = $event) : (newQuiz.duration = $event)" 
+                name="duration"
+                min="5"
+                max="180"
+                step="5"
+              >
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Points maximum</label>
+              <input 
+                type="number" 
+                class="form-input" 
+                [ngModel]="editingQuiz ? editingQuiz.points : newQuiz.points"
+                (ngModelChange)="editingQuiz ? (editingQuiz.points = $event) : (newQuiz.points = $event)" 
+                name="points"
+                min="10"
+                max="1000"
+                step="10"
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Statut</label>
+              <select 
+                class="form-select" 
+                [ngModel]="editingQuiz ? editingQuiz.status : newQuiz.status"
+                (ngModelChange)="editingQuiz ? (editingQuiz.status = $event) : (newQuiz.status = $event)" 
+                name="status"
+              >
+                <option value="draft">📝 Brouillon</option>
+                <option value="active">✅ Actif</option>
+                <option value="archived">📦 Archivé</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Apparence -->
+        <div class="form-section">
+          <h3 class="section-title">🎨 Apparence</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">URL de l'image</label>
+              <input 
+                type="url" 
+                class="form-input" 
+                [ngModel]="editingQuiz ? editingQuiz.imageUrl : newQuiz.imageUrl"
+                (ngModelChange)="editingQuiz ? (editingQuiz.imageUrl = $event) : (newQuiz.imageUrl = $event)" 
+                name="imageUrl"
+                placeholder="https://exemple.com/image.jpg"
+              >
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Badge</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [ngModel]="editingQuiz ? editingQuiz.badge : newQuiz.badge"
+                (ngModelChange)="editingQuiz ? (editingQuiz.badge = $event) : (newQuiz.badge = $event)" 
+                name="badge"
+                placeholder="Expert JavaScript"
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Classe CSS du badge</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                [ngModel]="editingQuiz ? editingQuiz.badgeClass : newQuiz.badgeClass"
+                (ngModelChange)="editingQuiz ? (editingQuiz.badgeClass = $event) : (newQuiz.badgeClass = $event)" 
+                name="badgeClass"
+                placeholder="badge-gold"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions du modal -->
+        <div class="modal-actions">
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="closeModal()"
+            [disabled]="isLoading"
+          >
+            Annuler
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="isLoading || !quizForm.form.valid"
+          >
+            <span *ngIf="isLoading" class="button-spinner"></span>
+            {{ editingQuiz ? 'Mettre à jour' : 'Créer le Quiz' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast de notification -->
+<div class="toast-container">
+  <div 
+    class="toast" 
+    *ngFor="let toast of toasts" 
+    [class]="'toast-' + toast.type"
+    [@slideIn]
+  >
+    <span class="toast-icon">{{ getToastIcon(toast.type) }}</span>
+    <span class="toast-message">{{ toast.message }}</span>
+    <button class="toast-close" (click)="removeToast(toast.id)">✕</button>
   </div>
 </div>
