@@ -162,8 +162,14 @@ export class QuestionManagementComponent implements OnInit {
       return;
     }
     if (confirm('Êtes-vous sûr de vouloir supprimer cette question ?')) {
-      this.quizService.deleteQuestion(questionId).subscribe(() => {
-        this.questions = this.questions.filter(q => q.id !== questionId);
+      this.quizService.deleteQuestion(questionId).subscribe({
+        next: () => {
+          this.loadQuestionsFromServer();
+          alert('Question supprimée avec succès');
+        },
+        error: () => {
+          alert('Erreur lors de la suppression de la question');
+        }
       });
     }
   }

@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { BehaviorSubject, Observable, throwError, forkJoin, timer } from 'rxjs';
 import { map, catchError, tap, retry, switchMap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Quiz, Question, QuizResult, Badge } from '../../models/quiz.model';
-
+import { of } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
@@ -459,9 +459,8 @@ export class QuizService {
     return this.getQuestionsByQuiz(originalQuizId).pipe(
       switchMap(questions => {
         if (questions.length === 0) {
-          return new BehaviorSubject([]).asObservable();
+          return of([]);
         }
-        
         const duplicateRequests = questions.map(question => {
           const questionCopy: Question = {
             question: question.question,

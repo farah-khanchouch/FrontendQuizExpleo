@@ -273,16 +273,16 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Thème</label>
-              <select 
-                class="form-select" 
-                [ngModel]="editingQuiz ? editingQuiz.theme : newQuiz.theme"
-                (ngModelChange)="editingQuiz ? (editingQuiz.theme = $event) : (newQuiz.theme = $event)" 
-                name="theme"
-              >
-                <option value="technique">🔧 Technique</option>
-                <option value="culture">🎭 Culture générale</option>
-                <option value="ludique">🎮 Ludique</option>
-              </select>
+              <input
+  type="text"
+  class="form-input"
+  [ngModel]="editingQuiz ? editingQuiz.theme : newQuiz.theme"
+  (ngModelChange)="editingQuiz ? (editingQuiz.theme = $event) : (newQuiz.theme = $event)"
+  name="theme"
+  placeholder="Ex : Technique, Culture générale, etc."
+  maxlength="50"
+  required
+>
             </div>
 
             <div class="form-group">

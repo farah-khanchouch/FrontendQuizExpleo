@@ -187,9 +187,9 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     this.newQuiz = {
       title: '',
       description: '',
-      theme: 'technique',
-      duration: 30,
-      points: 100,
+      theme: '',
+      duration: 5,
+      points: 10,
       imageUrl: '',
       badge: '',
       badgeClass: '',
