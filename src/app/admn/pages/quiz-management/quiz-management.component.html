@@ -293,7 +293,7 @@
                 [ngModel]="editingQuiz ? editingQuiz.duration : newQuiz.duration"
                 (ngModelChange)="editingQuiz ? (editingQuiz.duration = $event) : (newQuiz.duration = $event)" 
                 name="duration"
-                min="5"
+                min="1"
                 max="180"
                 step="5"
               >

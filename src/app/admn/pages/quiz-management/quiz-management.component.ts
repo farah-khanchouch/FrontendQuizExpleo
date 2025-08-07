@@ -32,8 +32,8 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     title: '',              // Le titre du quiz (modifiable par l'admin)
     description: '',        // La description (modifiable)
     theme: '',              // Thème saisi librement par l’admin (ex: "technique", "culture générale"...)
-    duration: 30,           // Durée en minutes (modifiable)
-    points: 100,            // Nombre total de points (modifiable)
+    duration: 0,           // Durée en minutes (modifiable)
+    points: 0,            // Nombre total de points (modifiable)
     imageUrl: '',           // URL d’une image (peut être définie)
     badge: '',              // Nom du badge à attribuer
     badgeClass: '',         // Classe CSS ou identifiant du badge
