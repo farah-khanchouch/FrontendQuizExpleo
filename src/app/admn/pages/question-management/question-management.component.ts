@@ -183,7 +183,7 @@ export class QuestionManagementComponent implements OnInit {
     if (duplicated.options) {
       duplicated.options = [...duplicated.options];
     }
-
+  
     // Appel API direct pour créer une copie dans la base :
     const questionData: NewQuestion = {
       type: duplicated.type,
@@ -194,10 +194,12 @@ export class QuestionManagementComponent implements OnInit {
       explanation: duplicated.explanation,
       quizId: this.quizId
     };
-
+  
     this.createQuestion(this.quizId, questionData).subscribe({
-      next: () => {
-        this.loadQuestionsFromServer(); // recharge la liste propre
+      next: (createdQuestion) => {
+        this.questions.push(createdQuestion); // Ajoute la question dupliquée directement à la liste locale
+        // Optionnel: Pour l'afficher en haut de la liste, utilise unshift au lieu de push
+        // this.questions.unshift(createdQuestion);
       },
       error: (err) => {
         console.error('Erreur lors de la duplication :', err);
@@ -205,7 +207,6 @@ export class QuestionManagementComponent implements OnInit {
       }
     });
   }
-
 
   getQuestionTypeLabel(type: string): string {
     switch (type) {

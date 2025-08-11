@@ -6,7 +6,7 @@ import { QuizService } from '../../../services/quiz.service';
 import { Quiz } from '../../../../models/quiz.model';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-
+import { CBUS } from '../../../constants/cbus';
 @Component({
   selector: 'app-quiz-management',
   standalone: true,
@@ -21,6 +21,8 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
   editingQuiz: Quiz | null = null;
   isLoading = false;
   error: string | null = null;
+  quizImageFile: File | null = null;
+quizImageUrl: string | null = null;
   
   // Propriétés manquantes ajoutées
   activeMenuId: string | null = null;
@@ -39,8 +41,18 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     badgeClass: '',         // Classe CSS ou identifiant du badge
     status: 'draft' as 'active' | 'draft' | 'archived' // Statut du quiz (menu déroulant ou bouton radio dans le formulaire)
   };
-  
 
+cbusList = CBUS;
+selectedCBUs: string[] = [];
+allCBUsSelected = false;
+
+toggleAllCBUs() {
+  if (this.allCBUsSelected) {
+    this.selectedCBUs = [...this.cbusList];
+  } else {
+    this.selectedCBUs = [];
+  }
+}
   constructor(private quizService: QuizService, private router: Router) {}
 
   ngOnInit() {
@@ -56,6 +68,16 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     this.subscriptions.push(quizzesSubscription);
   }
 
+  onCBUCheckboxChange(event: any, cbu: string) {
+    if (event.target.checked) {
+      if (!this.selectedCBUs.includes(cbu)) {
+        this.selectedCBUs.push(cbu);
+      }
+    } else {
+      this.selectedCBUs = this.selectedCBUs.filter(selected => selected !== cbu);
+    }
+    this.allCBUsSelected = this.selectedCBUs.length === this.cbusList.length;
+  }
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
@@ -71,6 +93,25 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
       this.filteredQuizzes = [...this.quizzes];
     } else {
       this.filteredQuizzes = this.quizzes.filter(quiz => quiz.status === status);
+    }
+  }
+  onQuizImageSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const validTypes = ['image/jpeg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        this.error = "Seuls les fichiers JPG, JPEG ou PNG sont autorisés.";
+        this.quizImageFile = null;
+        this.quizImageUrl = null;
+        return;
+      }
+  
+      this.quizImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.quizImageUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -398,18 +439,18 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     this.loadQuizzes(); // Recharger depuis le serveur avec filtres si nécessaire
   }
 
-  // Rechercher dans les quizzes
-  searchQuizzes(searchTerm: string) {
-    if (!searchTerm.trim()) {
-      this.filteredQuizzes = [...this.quizzes];
-      return;
-    }
+  // // Rechercher dans les quizzes
+  // searchQuizzes(searchTerm: string) {
+  //   if (!searchTerm.trim()) {
+  //     this.filteredQuizzes = [...this.quizzes];
+  //     return;
+  //   }
     
-    this.filteredQuizzes = this.quizzes.filter(quiz => 
-      quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quiz.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
+  //   this.filteredQuizzes = this.quizzes.filter(quiz => 
+  //     quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     quiz.description.toLowerCase().includes(searchTerm.toLowerCase())
+  //   );
+  // }
 
   // Obtenir les statistiques du quiz
   getQuizStats(quiz: Quiz) {

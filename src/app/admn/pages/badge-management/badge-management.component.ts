@@ -93,60 +93,67 @@ export class BadgeManagementComponent implements OnInit {
 
   updateBadge() {
     if (!this.editingBadge) return;
-
-    this.badgeService.updateBadge(this.editingBadge.id, this.editingBadge).subscribe({
-      next: (updated) => {
-        const index = this.badges.findIndex(b => b.id === updated.id);
-        if (index !== -1) this.badges[index] = updated;
+    this.badgeService.updateBadge(this.editingBadge._id, this.editingBadge).subscribe({
+      next: (updatedBadge) => {
+        // Mets à jour la liste sans reload
+        this.badges = this.badges.map(b =>
+          b._id === updatedBadge._id ? updatedBadge : b
+        );
         this.closeModal();
       },
       error: (err) => {
         console.error('Erreur mise à jour badge', err);
+        alert('Erreur lors de la modification du badge.');
       }
     });
   }
 
   deleteBadge(badgeId: string) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce badge ?')) return;
-
+    if (!confirm('Voulez-vous vraiment supprimer ce badge ?')) return;
     this.badgeService.deleteBadge(badgeId).subscribe({
       next: () => {
-        this.badges = this.badges.filter(b => b.id !== badgeId);
+        this.badges = this.badges.filter(b => b._id !== badgeId); // ← Cette ligne est ESSENTIELLE
       },
       error: (err) => {
         console.error('Erreur suppression badge', err);
+        alert('Erreur lors de la suppression du badge.');
       }
     });
   }
 
   toggleBadgeStatus(badge: Badge) {
-    this.badgeService.toggleBadgeActivation(badge.id, !badge.isActive).subscribe({
-      next: (updated) => {
-        badge.isActive = updated.isActive;
+    this.badgeService.toggleBadgeActivation(badge._id, !badge.isActive).subscribe({
+      next: (updatedBadge) => {
+        // Mets à jour le statut localement sans reload
+        this.badges = this.badges.map(b =>
+          b._id === updatedBadge._id ? updatedBadge : b
+        );
       },
       error: (err) => {
         console.error('Erreur activation badge', err);
+        alert('Erreur lors de l’activation/désactivation du badge.');
       }
     });
   }
 
   duplicateBadge(badge: Badge) {
-    const duplicated = {
-      ...badge,
-      name: badge.name + ' (Copie)',
-      isActive: false,
-      earnedBy: 0,
-      createdAt: new Date()
-    };
+    const { _id, id, ...rest } = badge; // Retire les IDs
+const duplicated = {
+  ...rest,
+  name: badge.name + ' (Copie)',
+  isActive: false,
+  earnedBy: 0,
+  createdAt: new Date()
+};
 
-    this.badgeService.createBadge(duplicated).subscribe({
-      next: (newBadge) => {
-        this.badges.push(newBadge);
-      },
-      error: (err) => {
-        console.error('Erreur duplication badge', err);
-      }
-    });
+this.badgeService.createBadge(duplicated).subscribe({
+  next: (newBadge) => {
+    this.badges.push(newBadge); // La copie s’affiche immédiatement
+  },
+  error: (err) => {
+    console.error('Erreur duplication badge', err);
+  }
+});
   }
 
   getTypeBadgeClass(type: string): string {

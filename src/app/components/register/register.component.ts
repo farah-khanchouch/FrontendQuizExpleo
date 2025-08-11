@@ -35,7 +35,9 @@ import { GoogleAuthService } from '../../services/google-auth.service';
         "EES : Electronic Embedded Systems",
         "DET : Digital and Technology",
         "MPE : Mechanical Product Engineering",
-        "CSP / SGA"
+        "CSP ",
+        "SGA"
+
       ];
       constructor(
         private authService: AuthService,

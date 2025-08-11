@@ -4,9 +4,7 @@
       <h1 class="page-title">Gestion des Collaborateurs</h1>
       <p class="page-subtitle">{{ stats.total }} collaborateurs • {{ stats.active }} actifs • {{ stats.averageCompletion }}% de completion moyenne</p>
     </div>
-    <button class="btn btn-secondary" (click)="exportUsers()">
-      📊 Exporter
-    </button>
+    
     
   </div>
 
@@ -127,7 +125,7 @@
     </div>
 
     <div class="empty-state" *ngIf="filteredUsers.length === 0">
-      <div class="empty-icon">👥</div>
+      <div class="empty-icon"></div>
       <h3>Aucun collaborateur trouvé</h3>
       <p>Essayez de modifier vos critères de recherche.</p>
     </div>

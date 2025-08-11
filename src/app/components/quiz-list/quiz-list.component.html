@@ -13,8 +13,8 @@
       </div>
       <p>{{quiz.description}}</p>
       <div class="quiz-info">
-        <span>⏱️ {{quiz.duration}}</span>
-        <span>❓ {{quiz.questions.length}} questions</span>
+        <span> {{quiz.duration}}</span>
+        <span> {{quiz.questions.length}} questions</span>
       </div>
       <button class="btn" [ngClass]="quiz.progressStatus === 'completed' ? 'btn-secondary' : 'btn-primary'"
       >

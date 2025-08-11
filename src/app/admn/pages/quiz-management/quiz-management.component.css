@@ -154,6 +154,43 @@
   resize: vertical;
   min-height: 100px;
 }
+.cbus-checkbox-list {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafbfc;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.cbu-checkbox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  color: #444;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.cbu-checkbox:hover {
+  background: #f0f4fa;
+}
+
+.cbu-checkbox input[type="checkbox"] {
+  flex-shrink: 0;
+}
+
+.cbu-checkbox label {
+  flex: 1;
+  padding-left: 10px;
+  word-break: break-word;
+}
+
 
 @media (max-width: 768px) {
   .page-header {

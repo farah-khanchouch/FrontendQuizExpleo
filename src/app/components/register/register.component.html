@@ -1,150 +1,122 @@
 <div class="app-container">
-    <!-- Header -->
-    <header class="header">
-      <div class="logo">
-        <img src="/logoo.jpg" alt="Expleo Logo" class="logo-icon" />
-      </div>
-      <button class="btn btn-secondary contact-btn" (click)="goToExpleoSite()">Contact Us</button>
-    </header>
-  
-    <main class="main-content">
-      <div class="content-wrapper">
-        <!-- Left Section - Form -->
-        <section class="form-section">
-          <div class="form-container">
-            <div class="form-header">
-              <h2>Créer un compte</h2>
-              <p>Bienvenue, créez votre compte Expleo !</p>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <img src="/logoo.jpg" alt="Expleo Logo" class="logo-icon" />
+    </div>
+    <button class="btn btn-secondary contact-btn" (click)="goToExpleoSite()">Contact Us</button>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <!-- Left Section - Form -->
+      <section class="form-section">
+        <div class="form-container">
+          <div class="form-header">
+            <h2>Créer un compte</h2>
+            <p>Bienvenue, créez votre compte Expleo !</p>
+          </div>
+
+          <form (ngSubmit)="onRegister()" class="signup-form">
+            <div class="input-group">
+              <input type="text" id="fullname" [(ngModel)]="fullname" name="fullname" placeholder="Nom complet"
+                required>
+              <label for="fullname">Nom complet</label>
             </div>
-  
-            <form (ngSubmit)="onRegister()" class="signup-form">
-              <div class="input-group">
-                <input 
-                  type="text" 
-                  id="fullname" 
-                  [(ngModel)]="fullname" 
-                  name="fullname"
-                  placeholder="Nom complet"
-                  required
-                >
-                <label for="fullname">Nom complet</label>
-              </div>
-  
-              <div class="input-group">
-                <input 
-                  type="email" 
-                  id="email" 
-                  [(ngModel)]="email" 
-                  name="email"
-                  placeholder="Email"
-                  required
-                >
-                <label for="email">Email</label>
-              </div>
-              <div class="input-group">
-                <select [(ngModel)]="cbu" name="cbu" required>
-                  <option value="" disabled selected hidden>Choisir votre CBU</option>
-                  <option *ngFor="let item of cbuList" [value]="item">{{ item }}</option>
-                </select>
-                <label for="cbu">CBU</label>
-              </div>
-              
-  
-              <div class="input-group password-group">
-                <input 
-                  [type]="showPassword ? 'text' : 'password'" 
-                  id="password" 
-                  [(ngModel)]="password" 
-                  name="password"
-                  placeholder="Mot de passe"
-                  required
-                >
-                <label for="password">Mot de passe</label>
-                <button 
-                  type="button" 
-                  class="password-toggle"
-                  (click)="togglePassword()"
-                  [attr.aria-label]="showPassword ? 'Cacher le mot de passe' : 'Afficher le mot de passe'">
-                  
-                  <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-              
-                  <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2"/>
-                    <path d="M1 1l22 22" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-              
-                </button>
-              </div>
-              
-              <div class="input-group password-group">
-                <input 
-                  [type]="showConfirmPassword ? 'text' : 'password'" 
-                  id="confirmPassword" 
-                  [(ngModel)]="confirmPassword" 
-                  name="confirmPassword"
-                  placeholder="Confirmer le mot de passe"
-                  required
-                >
-                <label for="confirmPassword">Confirmer le mot de passe</label>
-                <button 
-                  type="button" 
-                  class="password-toggle"
-                  (click)="toggleConfirmPassword()"
-                  [attr.aria-label]="showConfirmPassword ? 'Cacher le mot de passe' : 'Afficher le mot de passe'">
-                  
-                  <svg *ngIf="!showConfirmPassword" viewBox="0 0 24 24" fill="none">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-              
-                  <svg *ngIf="showConfirmPassword" viewBox="0 0 24 24" fill="none">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2"/>
-                    <path d="M1 1l22 22" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-              
-                </button>
-              </div>
-              
-              <div *ngIf="errorMessage" class="error-message">
-                {{ errorMessage }}
-              </div>
-  
-              <button type="submit" class="btn btn-primary signup-btn" [disabled]="isLoading">
-                <span *ngIf="!isLoading">Créer un compte</span>
-                <div *ngIf="isLoading" class="loading-spinner"></div>
+
+            <div class="input-group">
+              <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="Email" required>
+              <label for="email">Email</label>
+            </div>
+            <div class="input-group">
+              <select [(ngModel)]="cbu" name="cbu" required>
+                <option value="" disabled selected hidden>votre CBU</option>
+                <option *ngFor="let item of cbuList" [value]="item">{{ item }}</option>
+              </select>
+              <label for="cbu">CBU</label>
+            </div>
+
+
+            <div class="input-group password-group">
+              <input [type]="showPassword ? 'text' : 'password'" id="password" [(ngModel)]="password" name="password"
+                placeholder="Mot de passe" required>
+              <label for="password">Mot de passe</label>
+              <button type="button" class="password-toggle" (click)="togglePassword()"
+                [attr.aria-label]="showPassword ? 'Cacher le mot de passe' : 'Afficher le mot de passe'">
+
+                <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                </svg>
+
+                <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                    stroke="currentColor" stroke-width="2" />
+                  <path d="M1 1l22 22" stroke="currentColor" stroke-width="2" />
+                </svg>
+
               </button>
-            </form>
-  
-            <div class="no-account-message" style="margin-top: 16px; color: white; font-weight: 500; text-align: center;">
-              Vous avez déjà un compte ? 
-              <a (click)="goToLogin()" style="color: #407ef0; text-decoration: underline; cursor: pointer;">
-                Connectez-vous ici
-              </a>
             </div>
-          </div>
-        </section>
-  
-        <!-- Divider -->
-        <div class="divider"></div>
-  
-        <!-- Right Section - Welcome -->
-        <section class="welcome-section">
-          <div class="welcome-content">
-            <div class="welcome-animation">
-              <div class="floating-shapes">
-                <div class="shape shape-1"></div>
-                <div class="shape shape-2"></div>
-                <div class="shape shape-3"></div>
-                <img src="/3dnew.jpg" class="welcome-image" />
-              </div>
-              <h3>Bienvenue chez Expleo !</h3>
+
+            <div class="input-group password-group">
+              <input [type]="showConfirmPassword ? 'text' : 'password'" id="confirmPassword"
+                [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Confirmer le mot de passe" required>
+              <label for="confirmPassword">Confirmer le mot de passe</label>
+              <button type="button" class="password-toggle" (click)="toggleConfirmPassword()"
+                [attr.aria-label]="showConfirmPassword ? 'Cacher le mot de passe' : 'Afficher le mot de passe'">
+
+                <svg *ngIf="!showConfirmPassword" viewBox="0 0 24 24" fill="none">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                </svg>
+
+                <svg *ngIf="showConfirmPassword" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                    stroke="currentColor" stroke-width="2" />
+                  <path d="M1 1l22 22" stroke="currentColor" stroke-width="2" />
+                </svg>
+
+              </button>
             </div>
+
+            <div *ngIf="errorMessage" class="error-message">
+              {{ errorMessage }}
+            </div>
+
+            <button type="submit" class="btn btn-primary signup-btn" [disabled]="isLoading">
+              <span *ngIf="!isLoading">Créer un compte</span>
+              <div *ngIf="isLoading" class="loading-spinner"></div>
+            </button>
+          </form>
+
+          <div class="no-account-message" style="margin-top: 16px; color: white; font-weight: 500; text-align: center;">
+            Vous avez déjà un compte ?
+            <a (click)="goToLogin()" style="color: #407ef0; text-decoration: underline; cursor: pointer;">
+              Connectez-vous ici
+            </a>
           </div>
-        </section>
-      </div>
-    </main>
-  </div>
-  
+        </div>
+      </section>
+
+      <!-- Divider -->
+      <div class="divider"></div>
+
+      <!-- Right Section - Welcome -->
+      <section class="welcome-section">
+        <div class="welcome-content">
+          <div class="welcome-animation">
+            <div class="floating-shapes">
+              <div class="shape shape-1"></div>
+              <div class="shape shape-2"></div>
+              <div class="shape shape-3"></div>
+              <img src="/3dnew.jpg" class="welcome-image" />
+            </div>
+            <h3>Bienvenue chez Expleo !</h3>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>

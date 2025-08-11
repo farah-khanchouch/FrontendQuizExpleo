@@ -62,6 +62,7 @@ export interface BadgeUpdateDto {
 
 export interface Badge {
   id: string;
+  _id: string;
   name: string;
   description: string;
   icon: string;

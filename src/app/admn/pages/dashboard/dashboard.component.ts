@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { QuizService } from '../../../services/quiz.service';
 import { UserService } from '../../../services/user.service';
+import { BadgeService } from '../../../services/badge.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -11,7 +12,8 @@ import { UserService } from '../../../services/user.service';
   styleUrls: ['./dashboard.component.css', '../../global_styles.css']
 })
 export class DashboardComponent implements OnInit {
-  constructor(private userService: UserService, private quizService: QuizService) {}
+totalBadges: number = 0;
+  constructor(private userService: UserService, private quizService: QuizService, private badgeService: BadgeService) {}
 
   stats = {
     active: 0,
@@ -22,15 +24,22 @@ export class DashboardComponent implements OnInit {
     // Ajoutez d'autres stats si nécessaire
     totalQuizzes: 0,
     completedQuizzes: 0,
-    averageScore: 0
-  };
+    averageScore: 0,
+    totalBadges: 0
+    };
 
 
-  ngOnInit() {
-      this.loadQuizzes(); // ou quel que soit ton nom de méthode
-    
-    this.loadUserStats();
-  }
+    ngOnInit() {
+      this.loadQuizzes();
+      this.loadUserStats();
+      this.loadBadges(); // ajoute cette ligne
+    }
+    loadBadges() {
+      this.badgeService.getBadges().subscribe((badges) => {
+        this.totalBadges = badges.length;
+      });
+    }
+  
 
   loadUserStats() {
     this.userService.getAllUsers().subscribe({
@@ -68,7 +77,8 @@ export class DashboardComponent implements OnInit {
           blockedUsers: 0,
           totalQuizzes: 0,
           completedQuizzes: 0,
-          averageScore: 0
+          averageScore: 0,
+          totalBadges: 0
         };
       }
     });
