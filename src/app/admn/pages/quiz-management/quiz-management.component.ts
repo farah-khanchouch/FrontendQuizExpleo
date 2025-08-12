@@ -38,7 +38,8 @@ quizImageUrl: string | null = null;
     points: 0,            // Nombre total de points (modifiable)
     imageUrl: '',           // URL d’une image (peut être définie)
     badge: '',              // Nom du badge à attribuer
-    badgeClass: '',         // Classe CSS ou identifiant du badge
+    badgeClass: '', 
+    cbus: [] as string[],       // Classe CSS ou identifiant du badge
     status: 'draft' as 'active' | 'draft' | 'archived' // Statut du quiz (menu déroulant ou bouton radio dans le formulaire)
   };
 
@@ -234,6 +235,7 @@ toggleAllCBUs() {
       imageUrl: '',
       badge: '',
       badgeClass: '',
+      cbus: [] as string[],
       status: 'draft'
     };
   }
@@ -241,6 +243,7 @@ toggleAllCBUs() {
   createQuiz() {
     if (this.newQuiz.title && this.newQuiz.description) {
       this.isLoading = true;
+      this.newQuiz.cbus = this.selectedCBUs;
       
       const createSubscription = this.quizService.createQuiz(this.newQuiz as Quiz).subscribe({
         next: (response) => {

@@ -121,6 +121,12 @@
             </div>
           </div>
         </div>
+        <div class="quiz-cbus">
+          <strong>CBUs concernés :</strong>
+          <div class="cbu-item" *ngFor="let cbu of quiz.cbus">
+            {{ cbu }}
+          </div>
+        </div>
 
         <!-- Barre de progression pour les quiz en cours -->
         <div class="progress-section" *ngIf="getCompletionRate(quiz) > 0">
@@ -248,10 +254,7 @@
         <div class="form-group">
           <label>CBUs concernés :</label>
           <div class="cbus-checkbox-list">
-            <label class="select-all-label">
-              <input type="checkbox" [checked]="allCBUsSelected" (change)="toggleAllCBUs()" />
-              <b>Tout sélectionner</b>
-            </label>
+            
             <div class="cbus-list">
               <label *ngFor="let cbu of cbusList" class="cbu-checkbox">
                 <input type="checkbox" [checked]="selectedCBUs.includes(cbu)"

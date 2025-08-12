@@ -163,34 +163,41 @@
   margin-top: 8px;
   margin-bottom: 8px;
 }
-
 .cbu-checkbox {
-  width: 100%;
   display: flex;
-  align-items: center;
-  font-size: 15px;
-  color: #444;
-  padding: 8px 12px;
-  box-sizing: border-box;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background 0.2s;
+  align-items: center;  /* centre verticalement */
+  gap: 6px;             /* petit espace entre case et texte */
+  margin: 0;
+  padding: 0;
 }
+
+.cbu-checkbox input[type="checkbox"] {
+  margin: 0; /* supprime les marges par défaut */
+}
+
+.cbu-checkbox label {
+  margin: 0;
+  padding: 0;
+  white-space: normal; /* permet au texte de passer à la ligne si nécessaire */
+}
+
 
 .cbu-checkbox:hover {
   background: #f0f4fa;
 }
 
-.cbu-checkbox input[type="checkbox"] {
-  flex-shrink: 0;
-}
 
-.cbu-checkbox label {
-  flex: 1;
-  padding-left: 10px;
-  word-break: break-word;
+.quiz-cbus {
+  margin-top: 8px;
 }
-
+.cbu-item {
+  padding: 2px 8px;
+  margin: 2px 0;
+  background: #f0f4fa;
+  border-radius: 4px;
+  display: inline-block;
+  font-size: 0.95em;
+}
 
 @media (max-width: 768px) {
   .page-header {

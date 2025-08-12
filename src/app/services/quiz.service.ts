@@ -69,6 +69,7 @@ export class QuizService {
       createdAt: quiz.createdAt ? new Date(quiz.createdAt) : new Date(),
       participants: quiz.participants || 0,
       averageScore: quiz.averageScore || 0,
+      cbus: quiz.cbus || [],
       status: quiz.status || 'draft',
       progressStatus: quiz.progressStatus,
       userStatus: quiz.userStatus
@@ -233,6 +234,7 @@ export class QuizService {
       status: quizData.status || 'draft',
       questions: [],
       participants: 0,
+      cbus: quizData.cbus || [],
       averageScore: 0,
       createdAt: new Date()
     };
@@ -263,6 +265,7 @@ export class QuizService {
       badge: quizData.badge?.trim(),
       badgeClass: quizData.badgeClass?.trim(),
       status: quizData.status,
+      cbus: quizData.cbus || [],
       updatedAt: new Date()
     };
 
@@ -311,6 +314,7 @@ export class QuizService {
       badgeClass: originalQuiz.badgeClass,
       status: 'draft',
       participants: 0,
+      cbus: originalQuiz.cbus || [],
       averageScore: 0
     };
   

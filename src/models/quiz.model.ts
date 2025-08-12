@@ -25,6 +25,7 @@ export interface Quiz {
   createdAt?: Date;
   participants?: number;
   averageScore?: number;
+  cbus: string[];
   status: 'draft' | 'active' | 'archived'; // État général du quiz (admin)
   progressStatus?: 'not-started' | 'in-progress' | 'completed'; // État pour un utilisateur
   userStatus?: 'not-started' | 'in-progress' | 'completed'; // État utilisateur
