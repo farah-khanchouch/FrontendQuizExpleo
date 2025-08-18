@@ -44,7 +44,7 @@
   <div class="content-section">
     <!-- État vide -->
     <div class="empty-state" *ngIf="quizzes.length === 0 && !isLoading">
-      <div class="empty-icon">📋</div>
+      <div class="empty-icon"></div>
       <h3 class="empty-title">Aucun quiz trouvé</h3>
       <p class="empty-description">Commencez par créer votre premier quiz</p>
       <button class="btn btn-primary" (click)="openCreateModal()">
@@ -84,8 +84,7 @@
           <div class="stat">
             <div class="stat-icon"></div>
             <div class="stat-content">
-              <span class="stat-value">{{ getQuizStats(quiz).questions }}</span>
-              <span class="stat-label">Questions</span>
+              <span class="stat-value">{{ quiz.questionCount || 0 }}</span>              <span class="stat-label">Questions</span>
             </div>
           </div>
 

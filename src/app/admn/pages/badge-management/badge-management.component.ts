@@ -140,7 +140,7 @@ export class BadgeManagementComponent implements OnInit {
     const { _id, id, ...rest } = badge; // Retire les IDs
 const duplicated = {
   ...rest,
-  name: badge.name + ' (Copie)',
+  name: badge.name + '',
   isActive: false,
   earnedBy: 0,
   createdAt: new Date()

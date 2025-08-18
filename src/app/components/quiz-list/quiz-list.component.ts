@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { QuizService } from '../../services/quiz.service';
 import { Quiz } from '../../../models/quiz.model';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-quiz-list',
@@ -20,12 +21,41 @@ export class QuizListComponent implements OnInit {
   isLoading = true;
   editingQuiz: Quiz | null = null;
   showEditModal = false;
-  constructor(private quizService: QuizService,  private router: Router) {}
-
-  ngOnInit(): void {
-    this.loadQuizzes();
+  userQuizzes: Quiz[] = [];
+  constructor(private quizService: QuizService, private router: Router, public authService: AuthService) {}
+  ngOnInit() {
+    console.log('INIT QUIZ LIST COMPONENT'); // tout en haut
+  
+    const user = this.authService.getCurrentUser();
+    console.log('USER:', user);
+  
+    this.quizService.getQuizzes().subscribe({
+      next: (quizzes) => {
+        console.log('QUIZZES:', quizzes);
+  
+        if (user && user.cbu) {
+          const filtered = quizzes.filter(q =>
+            q.status === 'active' &&
+            Array.isArray(q.cbus) &&
+            q.cbus.map(c => c.trim().toLowerCase()).includes(user.cbu!.trim().toLowerCase())
+          );
+          console.log('FILTERED:', filtered);
+          this.userQuizzes = filtered;
+        } else {
+          console.log('NO USER OR NO CBU');
+          this.userQuizzes = [];
+        }
+      },
+      error: (err) => {
+        console.error('ERROR GETTING QUIZZES:', err);
+      }
+    });
+  
+    console.log('END OF ngOnInit'); // tout en bas
   }
-
+  getQuizQuestionsCount(quiz: Quiz): number {
+    return Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions as any || 0);
+  }
   loadQuizzes(): void {
     this.isLoading = true;
     this.quizService.getQuizzes().subscribe({
@@ -40,7 +70,8 @@ export class QuizListComponent implements OnInit {
       }
     });
   }
-
+ 
+  
   filterByTheme(theme: string): void {
     this.selectedTheme = theme;
     if (theme === '') {
@@ -53,7 +84,9 @@ export class QuizListComponent implements OnInit {
   getQuizCountByTheme(theme: string): number {
     return this.quizzes.filter(quiz => quiz.theme === theme).length;
   }
-
+  navigateToQuiz(quizId: string): void {
+    this.router.navigate(['/quiz', quizId]);
+  }
  
 
  

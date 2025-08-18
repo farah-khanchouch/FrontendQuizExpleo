@@ -32,20 +32,34 @@ export class QuizComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private quizService: QuizService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    const quizId = this.route.snapshot.params['quizId'];
+    const quizId = this.route.snapshot.params['quizId'] || this.route.snapshot.params['id'];
     console.log('quizId from route:', quizId);
     this.loadQuiz(quizId);
   }
-  
 
   loadQuiz(quizId: string): void {
     this.quizService.getQuizById(quizId).subscribe(
       (quiz: Quiz | undefined) => {
         this.quiz = quiz || null;
-        this.isLoading = false;
+        if (this.quiz) {
+          // Charger les questions créées par l'admin pour ce quiz
+          this.quizService.getQuestionsByQuiz(quizId).subscribe(
+            (questions: Question[]) => {
+              this.quiz!.questions = questions;
+              this.isLoading = false;
+            },
+            () => {
+              this.isLoading = false;
+              this.router.navigate(['/quizzes']);
+            }
+          );
+        } else {
+          this.isLoading = false;
+          this.router.navigate(['/quizzes']);
+        }
       },
       () => {
         this.isLoading = false;
@@ -76,7 +90,7 @@ export class QuizComponent implements OnInit {
     if (this.currentQuestion?.id !== undefined) {
       this.answers[this.currentQuestion.id] = this.selectedAnswer;
     }
-    
+
     if (this.selectedAnswer === this.currentQuestion.correctAnswer) {
       this.score += this.currentQuestion.points;
     }

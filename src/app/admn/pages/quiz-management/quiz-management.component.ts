@@ -7,6 +7,7 @@ import { Quiz } from '../../../../models/quiz.model';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CBUS } from '../../../constants/cbus';
+
 @Component({
   selector: 'app-quiz-management',
   standalone: true,
@@ -22,12 +23,12 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   quizImageFile: File | null = null;
-quizImageUrl: string | null = null;
-  
+  quizImageUrl: string | null = null;
+
   // Propriétés manquantes ajoutées
   activeMenuId: string | null = null;
   toasts: any[] = [];
-  
+
   private subscriptions: Subscription[] = [];
 
   newQuiz = {
@@ -38,26 +39,27 @@ quizImageUrl: string | null = null;
     points: 0,            // Nombre total de points (modifiable)
     imageUrl: '',           // URL d’une image (peut être définie)
     badge: '',              // Nom du badge à attribuer
-    badgeClass: '', 
+    badgeClass: '',
     cbus: [] as string[],       // Classe CSS ou identifiant du badge
     status: 'draft' as 'active' | 'draft' | 'archived' // Statut du quiz (menu déroulant ou bouton radio dans le formulaire)
   };
 
-cbusList = CBUS;
-selectedCBUs: string[] = [];
-allCBUsSelected = false;
+  cbusList = CBUS;
+  selectedCBUs: string[] = [];
+  allCBUsSelected = false;
 
-toggleAllCBUs() {
-  if (this.allCBUsSelected) {
-    this.selectedCBUs = [...this.cbusList];
-  } else {
-    this.selectedCBUs = [];
+  toggleAllCBUs() {
+    if (this.allCBUsSelected) {
+      this.selectedCBUs = [...this.cbusList];
+    } else {
+      this.selectedCBUs = [];
+    }
   }
-}
-  constructor(private quizService: QuizService, private router: Router) {}
+
+  constructor(private quizService: QuizService, private router: Router) { }
 
   ngOnInit() {
-    this.loadQuizzes();
+    this.loadQuizzes(true);
     // S'abonner aux changements en temps réel
     const quizzesSubscription = this.quizService.quizzes$.subscribe(
       quizzes => {
@@ -79,6 +81,7 @@ toggleAllCBUs() {
     }
     this.allCBUsSelected = this.selectedCBUs.length === this.cbusList.length;
   }
+
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
@@ -96,6 +99,7 @@ toggleAllCBUs() {
       this.filteredQuizzes = this.quizzes.filter(quiz => quiz.status === status);
     }
   }
+
   onQuizImageSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -106,7 +110,7 @@ toggleAllCBUs() {
         this.quizImageUrl = null;
         return;
       }
-  
+
       this.quizImageFile = file;
       const reader = new FileReader();
       reader.onload = (e: any) => {
@@ -154,7 +158,7 @@ toggleAllCBUs() {
       type
     };
     this.toasts.push(toast);
-    
+
     // Auto-remove après 5 secondes
     setTimeout(() => {
       this.removeToast(toast.id);
@@ -170,11 +174,11 @@ toggleAllCBUs() {
     }
   }
 
-  loadQuizzes() {
+  loadQuizzes(forceRefresh: boolean = false) {
     this.isLoading = true;
     this.error = null;
-    
-    const loadSubscription = this.quizService.getQuizzes().subscribe({
+
+    const loadSubscription = this.quizService.getQuizzes(forceRefresh).subscribe({
       next: (quizzes) => {
         this.quizzes = quizzes;
         this.filteredQuizzes = [...this.quizzes]; // Initialiser les quiz filtrés
@@ -244,11 +248,11 @@ toggleAllCBUs() {
     if (this.newQuiz.title && this.newQuiz.description) {
       this.isLoading = true;
       this.newQuiz.cbus = this.selectedCBUs;
-      
+
       const createSubscription = this.quizService.createQuiz(this.newQuiz as Quiz).subscribe({
         next: (response) => {
           console.log('Quiz créé avec succès:', response);
-          
+
           const quizId = response.id || response._id;
           if (quizId) {
             this.closeModal();
@@ -278,6 +282,7 @@ toggleAllCBUs() {
 
   editQuiz(quiz: Quiz) {
     this.editingQuiz = { ...quiz };
+    this.selectedCBUs = quiz.cbus ? [...quiz.cbus] : [];
     this.showCreateModal = true;
     this.activeMenuId = null; // Fermer le menu dropdown
   }
@@ -285,11 +290,11 @@ toggleAllCBUs() {
   updateQuiz() {
     if (this.editingQuiz && this.editingQuiz.id) {
       this.isLoading = true;
-      
+      this.editingQuiz.cbus = this.selectedCBUs;
       const updateSubscription = this.quizService.updateQuiz(this.editingQuiz.id, this.editingQuiz).subscribe({
         next: (updatedQuiz) => {
           console.log('Quiz mis à jour:', updatedQuiz);
-          
+
           // Mettre à jour la liste locale
           const index = this.quizzes.findIndex(q => q.id === updatedQuiz.id);
           if (index !== -1) {
@@ -299,7 +304,7 @@ toggleAllCBUs() {
               this.quizzes[index].questions = count as any;
             });
           }
-          
+
           this.closeModal();
           this.showToast('Quiz mis à jour avec succès', 'success');
           this.isLoading = false;
@@ -319,7 +324,7 @@ toggleAllCBUs() {
     const quizId = quiz.id || quiz._id;
     if (confirm(`Êtes-vous sûr de vouloir supprimer le quiz "${quiz.title}" ?`)) {
       this.isLoading = true;
-      
+
       const deleteSubscription = this.quizService.deleteQuiz(quizId).subscribe({
         next: () => {
           console.log('Quiz supprimé avec succès');
@@ -341,7 +346,7 @@ toggleAllCBUs() {
   duplicateQuiz(quiz: Quiz) {
     if (confirm(`Voulez-vous dupliquer le quiz "${quiz.title}" ?`)) {
       this.isLoading = true;
-      
+
       const duplicateSubscription = this.quizService.duplicateQuiz(quiz).subscribe({
         next: (newQuiz) => {
           console.log('Quiz dupliqué avec succès:', newQuiz);
@@ -380,7 +385,7 @@ toggleAllCBUs() {
     const quizId = quiz.id || quiz._id;
     const typedStatus = newStatus as 'draft' | 'active' | 'archived';
     const updatedQuizFixed = { ...quiz, status: typedStatus };
-    
+
     const toggleSubscription = this.quizService.updateQuiz(quizId, updatedQuizFixed).subscribe({
       next: (updated) => {
         console.log('Statut du quiz mis à jour:', updated);
@@ -448,7 +453,7 @@ toggleAllCBUs() {
   //     this.filteredQuizzes = [...this.quizzes];
   //     return;
   //   }
-    
+
   //   this.filteredQuizzes = this.quizzes.filter(quiz => 
   //     quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
   //     quiz.description.toLowerCase().includes(searchTerm.toLowerCase())

@@ -7,6 +7,7 @@ export interface User {
   totalPoints: number;
   badges: Badge[];
   completedQuizzes: string[];
+  cbu?: string;
 }
 
 
@@ -17,6 +18,7 @@ export interface Quiz {
   description: string;
   theme: 'technique' | 'culture' | 'ludique';
   questions: Question[];
+  questionCount: number;
   duration: number; // en minutes
   points: number;
   imageUrl?: string;

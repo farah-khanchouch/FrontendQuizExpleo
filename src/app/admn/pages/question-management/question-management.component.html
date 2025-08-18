@@ -12,6 +12,28 @@
     <button class="btn btn-primary" (click)="openCreateModal()">
       ➕ Nouvelle Question
     </button>
+    <!-- Bouton de synchronisation avec indicateur -->
+<div class="sync-controls">
+  <button 
+    class="btn btn-primary"
+    [class.btn-warning]="aDesModificationsPendantes()"
+    (click)="synchroniserAvecQuiz()">
+    🔄 Synchroniser 
+    <span *ngIf="aDesModificationsPendantes()" class="badge">•</span>
+  </button>
+  
+  <button 
+    class="btn btn-secondary ml-2"
+    *ngIf="aDesModificationsPendantes()"
+    (click)="annulerModifications()">
+    ↩️ Annuler modifications
+  </button>
+</div>
+
+<!-- Message d'état -->
+<div *ngIf="aDesModificationsPendantes()" class="alert alert-warning mt-2">
+  ⚠️ Vous avez des modifications non sauvegardées. Cliquez sur "Synchroniser" pour les enregistrer.
+</div>
 
   </div>
 

@@ -104,13 +104,11 @@ export class QuizService {
       this.quizzesSubject.next([...currentQuizzes]);
     }
   }
-
   private updateQuizInState(updatedQuiz: Quiz): void {
     const currentQuizzes = this.quizzesSubject.value;
-    const index = currentQuizzes.findIndex(quiz => 
+    const index = currentQuizzes.findIndex(quiz =>
       (quiz.id || quiz._id) === (updatedQuiz.id || updatedQuiz._id)
     );
-    
     if (index !== -1) {
       currentQuizzes[index] = { ...currentQuizzes[index], ...updatedQuiz };
       this.quizzesSubject.next([...currentQuizzes]);
@@ -170,39 +168,37 @@ export class QuizService {
     if (!forceRefresh && this.quizzesSubject.value.length > 0) {
       return this.quizzes$;
     }
-
+  
     this.setLoading(true);
     this.setError(null);
-
+  
     return this.http.get<any[]>(this.baseUrl, { headers: this.getAuthHeaders() }).pipe(
-      map((quizzes: any[]) => 
+      map((quizzes: any[]) =>
         quizzes.map(quiz => this.transformQuizFromAPI(quiz))
       ),
       tap(quizzes => {
+        console.log('[QuizService] Quizzes loaded from API:', quizzes);
         this.updateQuizzesState(quizzes);
         this.setLoading(false);
-        // Charger le nombre de questions pour chaque quiz
         this.loadQuestionCountsForQuizzes(quizzes);
+        console.log('[QuizService] getQuizzes() finished');
       }),
       retry(2),
       catchError(this.handleError)
     );
   }
-
   private loadQuestionCountsForQuizzes(quizzes: Quiz[]): void {
     quizzes.forEach(quiz => {
       const quizId = quiz.id || quiz._id;
-      this.getQuestionsByQuiz(quizId).subscribe({
+      this.getQuestionsByQuiz(quizId, true).subscribe({
         next: (questions) => {
-          // Mettre à jour le quiz avec le nombre de questions
-          const updatedQuiz = { ...quiz, questions: questions.length as any };
+          const updatedQuiz = { ...quiz, questionCount: questions.length };
           this.updateQuizInState(updatedQuiz);
         },
-        error: (err) => console.error(`Erreur lors du chargement des questions pour ${quizId}:`, err)
+        error: (err) => console.error(`[QuizService] Error loading questions for ${quizId}:`, err)
       });
     });
   }
-
   getQuizById(id: string): Observable<Quiz> {
     this.setLoading(true);
     
@@ -304,7 +300,7 @@ export class QuizService {
     const originalId = originalQuiz.id || originalQuiz._id;
     
     const duplicateData: Partial<Quiz> = {
-      title: `${originalQuiz.title} (Copie)`,
+      title: `${originalQuiz.title} `,
       description: originalQuiz.description,
       theme: originalQuiz.theme,
       duration: originalQuiz.duration,

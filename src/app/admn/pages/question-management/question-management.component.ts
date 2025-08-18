@@ -59,7 +59,6 @@ export class QuestionManagementComponent implements OnInit {
   private baseUrl = 'http://localhost:3000/api/quizzes';
 
   ngOnInit() {
-    // Récupérer quizId une seule fois au chargement
     this.route.params.subscribe(params => {
       this.quizId = params['id'] || params['quizId'];
 
@@ -77,10 +76,12 @@ export class QuestionManagementComponent implements OnInit {
   loadQuestionsFromServer() {
     this.quizService.getQuestionsByQuiz(this.quizId).subscribe({
       next: (questions) => {
-        this.questions = questions; // Réinitialiser les questions
+        this.questions = questions || [];
+        console.log('Questions chargées depuis le serveur:', this.questions);
       },
       error: (err) => {
         console.error('Erreur chargement questions:', err);
+        this.questions = [];
       }
     });
   }
@@ -98,8 +99,6 @@ export class QuestionManagementComponent implements OnInit {
 
   openCreateModal() {
     this.showCreateModal = true;
-
-    // Réinitialiser les données du formulaire
     this.newQuestion = {
       type: 'qcm',
       question: '',
@@ -147,13 +146,26 @@ export class QuestionManagementComponent implements OnInit {
   }
 
   updateQuestion() {
-    if (this.editingQuestion) {
-      const index = this.questions.findIndex(q => q.id === this.editingQuestion!.id);
-      if (index !== -1) {
-        this.questions[index] = { ...this.editingQuestion };
-      }
-      this.closeModal();
+    if (!this.editingQuestion || !this.editingQuestion.id) {
+      alert('Erreur: Impossible de mettre à jour la question');
+      return;
     }
+
+    // Valider la question
+    if (!this.validateQuestion(this.editingQuestion)) {
+      alert('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    // Mettre à jour dans la liste locale
+    const index = this.questions.findIndex(q => q.id === this.editingQuestion!.id);
+    if (index !== -1) {
+      this.questions[index] = { ...this.editingQuestion };
+      this.marquerQuestionModifiee(this.questions[index]);
+    }
+
+    this.closeModal();
+    alert('Question modifiée localement. Cliquez sur "Synchroniser" pour sauvegarder.');
   }
 
   deleteQuestion(questionId?: string) {
@@ -161,45 +173,28 @@ export class QuestionManagementComponent implements OnInit {
       console.warn('deleteQuestion called with undefined questionId');
       return;
     }
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette question ?')) {
-      this.quizService.deleteQuestion(questionId).subscribe({
-        next: () => {
-          this.loadQuestionsFromServer();
-          alert('Question supprimée avec succès');
-        },
-        error: () => {
-          alert('Erreur lors de la suppression de la question');
-        }
-      });
+    
+    const question = this.questions.find(q => q.id === questionId);
+    if (question) {
+      this.supprimerQuestion(question);
     }
   }
 
   duplicateQuestion(question: Question) {
-    const duplicated: Question = {
-      ...question,
-      id: undefined, // très important : retirer l'ID
-      question: `${question.question} (Copie)`
-    };
-    if (duplicated.options) {
-      duplicated.options = [...duplicated.options];
-    }
-  
-    // Appel API direct pour créer une copie dans la base :
     const questionData: NewQuestion = {
-      type: duplicated.type,
-      question: duplicated.question,
-      options: duplicated.options,
-      correctAnswer: duplicated.correctAnswer,
-      points: duplicated.points,
-      explanation: duplicated.explanation,
+      type: question.type,
+      question: `${question.question} `,
+      options: question.options ? [...question.options] : undefined,
+      correctAnswer: question.correctAnswer,
+      points: question.points,
+      explanation: question.explanation,
       quizId: this.quizId
     };
-  
-    this.createQuestion(this.quizId, questionData).subscribe({
+
+    this.quizService.createQuestion(this.quizId.toString(), questionData).subscribe({
       next: (createdQuestion) => {
-        this.questions.push(createdQuestion); // Ajoute la question dupliquée directement à la liste locale
-        // Optionnel: Pour l'afficher en haut de la liste, utilise unshift au lieu de push
-        // this.questions.unshift(createdQuestion);
+        console.log('Question dupliquée avec succès:', createdQuestion);
+        this.loadQuestionsFromServer(); // Recharger pour voir la nouvelle question
       },
       error: (err) => {
         console.error('Erreur lors de la duplication :', err);
@@ -246,185 +241,43 @@ export class QuestionManagementComponent implements OnInit {
     return index;
   }
 
-  // 1. Modifiez votre méthode saveAllQuestions()
-  saveAllQuestions() {
-    console.log('🚀 Début de la sauvegarde des questions...');
-    console.log('Questions à traiter:', this.questions);
-    console.log('Quiz ID:', this.quizId);
-
-    if (!this.questions || this.questions.length === 0) {
-      console.log('⚠️ Aucune question à sauvegarder');
-      alert('Aucune question à sauvegarder. Veuillez ajouter des questions d\'abord.');
+  saveNewQuestion() {
+    if (!this.validateQuestion(this.newQuestion)) {
+      alert('Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
-    // Séparer les questions à créer et à mettre à jour
-    const questionsToCreate = this.questions.filter(q => !q.id);
-    const questionsToUpdate = this.questions.filter(q => q.id);
-
-    console.log('Questions à créer:', questionsToCreate.length);
-    console.log('Questions à mettre à jour:', questionsToUpdate.length);
-
-    // Traiter les créations d'abord
-    this.processCreations(questionsToCreate).then(() => {
-      // Puis traiter les mises à jour
-      return this.processUpdates(questionsToUpdate);
-    }).then(() => {
-      console.log('✅ Toutes les questions ont été sauvegardées avec succès');
-      alert('Questions sauvegardées avec succès !');
-      this.router.navigate(['/admin/quiz-management']);
-    }).catch((error) => {
-      console.error('❌ Erreur lors de la sauvegarde:', error);
-      this.handleSaveError(error);
-    });
-  }
-
-  // 2. Traiter les créations séquentiellement
-  private async processCreations(questionsToCreate: any[]): Promise<void> {
-    for (let i = 0; i < questionsToCreate.length; i++) {
-      const question = questionsToCreate[i];
-      console.log(`Création de la question ${i + 1}/${questionsToCreate.length}`);
-
-      try {
-        const questionData = {
-          question: question.question,
-          type: question.type,
-          options: question.options ?? [],
-          correctAnswer: question.correctAnswer,
-          points: question.points,
-          explanation: question.explanation ?? '',
-          quizId: this.quizId
-        };
-
-        const response = await this.quizService.createQuestion(
-          this.quizId.toString(),
-          questionData
-        ).toPromise();
-
-        console.log('Question créée avec succès:', response);
-
-        // Mettre à jour l'ID de la question dans la liste locale
-        const questionIndex = this.questions.findIndex(q =>
-          q === question // Comparaison par référence
-        );
-
-        if (questionIndex !== -1 && response && response.id) {
-          this.questions[questionIndex].id = response.id;
-          console.log(`ID assigné à la question ${questionIndex}:`, this.questions[questionIndex].id);
-        }
-
-      } catch (error) {
-        console.error(`Erreur lors de la création de la question ${i + 1}:`, error);
-        throw error;
-      }
-    }
-  }
-
-  // 3. Traiter les mises à jour séquentiellement
-  private async processUpdates(questionsToUpdate: any[]): Promise<void> {
-    for (let i = 0; i < questionsToUpdate.length; i++) {
-      const question = questionsToUpdate[i];
-      console.log(`Mise à jour de la question ${i + 1}/${questionsToUpdate.length} (ID: ${question.id})`);
-
-      try {
-        const questionData = {
-          question: question.question,
-          type: question.type,
-          options: question.options ?? [],
-          correctAnswer: question.correctAnswer,
-          points: question.points,
-          explanation: question.explanation ?? '',
-          quizId: this.quizId
-        };
-
-        // Vérifier que l'ID existe avant la mise à jour
-        if (!question.id) {
-          console.error('ID manquant pour la question:', question);
-          throw new Error('ID de question manquant pour la mise à jour');
-        }
-
-        const response = await this.quizService.updateQuestion(
-          question.id,
-          questionData
-        ).toPromise();
-
-        console.log('Question mise à jour avec succès:', response);
-
-      } catch (error) {
-        console.error(`Erreur lors de la mise à jour de la question ${i + 1} (ID: ${question.id}):`, error);
-
-        if (typeof error === 'object' && error !== null && 'status' in error && (error as any).status === 404) {
-          console.log('Question non trouvée, tentative de recréation...');
-          // Retirer l'ID et recréer
-          question.id = undefined;
-          await this.processCreations([question]);
-        } else {
-          throw error;
-        }
-      }
-
-    }
-  }
-
-  // 4. Gérer les erreurs de sauvegarde
-  private handleSaveError(error: any): void {
-    console.error('Erreur détaillée:', error);
-
-    let errorMessage = 'Une erreur est survenue lors de la sauvegarde des questions.';
-
-    if (error.status) {
-      switch (error.status) {
-        case 404:
-          errorMessage = 'Ressource non trouvée. Certaines questions ont peut-être été supprimées.';
-          break;
-        case 400:
-          errorMessage = 'Données invalides. Vérifiez le contenu de vos questions.';
-          break;
-        case 401:
-          errorMessage = 'Non autorisé. Veuillez vous reconnecter.';
-          break;
-        case 500:
-          errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
-          break;
-        default:
-          errorMessage = `Erreur ${error.status}: ${error.message || 'Erreur inconnue'}`;
-      }
-    } else if (error.message) {
-      errorMessage += '\nDétails: ' + error.message;
+    if (!this.quizId) {
+      alert('Erreur: ID du quiz manquant. Impossible de créer la question.');
+      return;
     }
 
-    alert(errorMessage);
+    // Créer la question localement
+    const nouvelleQuestion: Question = {
+      type: this.newQuestion.type!,
+      question: this.newQuestion.question!,
+      options: this.newQuestion.options ? [...this.newQuestion.options] : undefined,
+      correctAnswer: this.newQuestion.correctAnswer!,
+      points: this.newQuestion.points!,
+      explanation: this.newQuestion.explanation || '',
+      quizId: this.quizId
+      // Pas d'ID - sera assigné lors de la synchronisation
+    };
+
+    this.questionsACreer.push(nouvelleQuestion);
+    this.modificationsPendantes = true;
+
+    this.closeModal();
+    alert('Nouvelle question ajoutée localement. Cliquez sur "Synchroniser" pour sauvegarder.');
   }
 
-  // // 5. Méthode pour recharger les questions depuis le serveur
-  // loadQuestionsFromServer() {
-  //   this.quizService.getQuestionsByQuiz(this.quizId).subscribe({
-  //     next: (questions) => {
-  //       this.questions = questions; // ne pas utiliser `this.questions.push(...)`
-  //     },
-  //     error: (err) => {
-  //       console.error('Erreur chargement questions:', err);
-  //     }
-  //   });
-  // }
-
-
-  // 6. Méthode à appeler dans ngOnInit pour charger les questions existantes
-
-
-  // 7. Alternative : sauvegarde avec rechargement automatique
-  saveAllQuestionsWithReload() {
-    // Sauvegarder
-    this.saveAllQuestions();
-
-    // Puis recharger après un délai
-    setTimeout(() => {
-      this.loadQuestionsFromServer();
-    }, 1000);
-  }
-
-  // Méthode utilitaire pour valider une question avant sauvegarde
+  // Méthode de validation améliorée
   private validateQuestion(question: any): boolean {
+    if (!question) {
+      console.error('Question undefined');
+      return false;
+    }
+
     if (!question.question || question.question.trim() === '') {
       console.error('Question vide détectée:', question);
       return false;
@@ -435,83 +288,425 @@ export class QuestionManagementComponent implements OnInit {
       return false;
     }
 
-    if (!question.correctAnswer) {
+    if (question.correctAnswer === null || question.correctAnswer === undefined || question.correctAnswer === '') {
       console.error('Réponse correcte manquante:', question);
       return false;
     }
 
-    if (question.type === 'multiple-choice' && (!question.options || question.options.length < 2)) {
-      console.error('Options insuffisantes pour question à choix multiple:', question);
+    if (question.type === 'qcm' && (!question.options || question.options.length < 2)) {
+      console.error('Options insuffisantes pour question QCM:', question);
+      return false;
+    }
+
+    if (!question.points || question.points <= 0) {
+      console.error('Points invalides:', question);
       return false;
     }
 
     return true;
   }
 
-  // Version alternative avec validation
-  saveAllQuestionsWithValidation() {
-    // Ajoutez ceci au début de saveAllQuestions()
-    console.log('Questions actuelles:', this.questions);
-    console.log('Quiz ID:', this.quizId);
-    console.log('🚀 Début de la sauvegarde avec validation...');
+  // Variables pour suivre les modifications
+  private questionsModifiees: Set<string> = new Set(); // IDs des questions modifiées
+  private questionsACreer: Question[] = []; // Questions sans ID à créer
+  private questionsASupprimer: Set<string> = new Set(); // IDs des questions à supprimer
+  private modificationsPendantes = false;
 
-    // Valider toutes les questions
-    const invalidQuestions = this.questions.filter(q => !this.validateQuestion(q));
-
-    if (invalidQuestions.length > 0) {
-      console.error('Questions invalides détectées:', invalidQuestions);
-      alert(`${invalidQuestions.length} question(s) sont incomplètes. Veuillez vérifier que tous les champs sont remplis.`);
-      return;
+  // Marquer une question comme modifiée
+  private marquerQuestionModifiee(question: Question) {
+    if (question.id) {
+      this.questionsModifiees.add(question.id);
     }
-
-    // Si toutes les questions sont valides, procéder à la sauvegarde
-    this.saveAllQuestions();
+    this.modificationsPendantes = true;
+    console.log('Question marquée comme modifiée:', question.id);
   }
 
-  loadQuestions() {
-    if (this.quizId) {
-      this.quizService.getQuestionsByQuizId(this.quizId.toString()).subscribe({
-        next: (questions) => {
-          this.questions = questions || [];
-          console.log('Questions chargées:', this.questions);
-        },
-        error: (error) => {
-          console.error('Erreur lors du chargement des questions:', error);
-          this.questions = [];
-        }
-      });
-    }
-  }
-
-  saveNewQuestion() {
-    // Validation des champs obligatoires
-    if (!this.newQuestion.question || !this.newQuestion.type) {
-      alert('Veuillez remplir tous les champs obligatoires.');
-      return;
-    }
-
-    if (!this.quizId) {
-      alert('Erreur: ID du quiz manquant. Impossible de créer la question.');
-      return;
-    }
-
-    // Créer l'objet questionData avec toutes les données nécessaires
-    const questionData: NewQuestion = {
-      ...this.newQuestion as NewQuestion,
+  // Ajouter une nouvelle question (sans ID)
+  ajouterNouvelleQuestion() {
+    const nouvelleQuestion: Question = {
+      type: 'qcm',
+      question: 'Nouvelle question',
+      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+      correctAnswer: 0,
+      points: 1,
+      explanation: '',
       quizId: this.quizId
     };
 
-    // Utiliser le service QuizService au lieu de la méthode locale
-    this.quizService.createQuestion(this.quizId.toString(), questionData).subscribe({
-      next: (createdQuestion) => {
-        console.log('Question créée avec succès:', createdQuestion);
-        this.closeModal();
-        this.loadQuestionsFromServer(); // ✅ recharger depuis backend
-      },
-      error: (error) => {
-        console.error('Erreur lors de la création de la question:', error);
-        alert('Une erreur est survenue lors de la création de la question.');
+    this.questionsACreer.push(nouvelleQuestion);
+    this.modificationsPendantes = true;
+    console.log('Nouvelle question ajoutée:', nouvelleQuestion);
+  }
+
+  // Supprimer une question (marquer pour suppression)
+  supprimerQuestion(question: Question) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette question ?')) {
+      return;
+    }
+
+    // Retirer de la liste affichée
+    const index = this.questions.indexOf(question);
+    if (index > -1) {
+      this.questions.splice(index, 1);
+    }
+
+    // Si la question a un ID, la marquer pour suppression sur le serveur
+    if (question.id) {
+      this.questionsASupprimer.add(question.id);
+    } else {
+      // Si pas d'ID, la retirer de la liste des questions à créer
+      const indexCreer = this.questionsACreer.indexOf(question);
+      if (indexCreer > -1) {
+        this.questionsACreer.splice(indexCreer, 1);
       }
-    });
+    }
+
+    this.modificationsPendantes = true;
+    console.log('Question marquée pour suppression:', question.id);
+  }
+
+  // Modifier une question existante
+  modifierQuestion(question: Question, champ: string, valeur: any) {
+    (question as any)[champ] = valeur;
+    this.marquerQuestionModifiee(question);
+  }
+
+  // MÉTHODE PRINCIPALE DE SYNCHRONISATION AVEC GESTION D'ERREURS 404
+  async synchroniserAvecQuiz() {
+    console.log('🔄 Début de la synchronisation complète...');
+    
+    if (!this.quizId) {
+      alert('Erreur: ID du quiz manquant');
+      return;
+    }
+
+    if (!this.modificationsPendantes) {
+      // Faire une synchronisation simple (rechargement depuis serveur)
+      this.loadQuestionsFromServer();
+      alert('Aucune modification à synchroniser. Données rechargées depuis le serveur.');
+      return;
+    }
+
+    try {
+      console.log('📊 État des modifications:', {
+        àCréer: this.questionsACreer.length,
+        àModifier: this.questionsModifiees.size,
+        àSupprimer: this.questionsASupprimer.size
+      });
+
+      let operationsReussies = 0;
+      let operationsEchouees = 0;
+      const erreursDetaillees: string[] = [];
+
+      // 1. SUPPRIMER les questions (en gérant les 404)
+      console.log('🗑️ Suppression des questions...');
+      for (const questionId of this.questionsASupprimer) {
+        try {
+          console.log(`Tentative de suppression: ${questionId}`);
+          await this.quizService.deleteQuestion(questionId).toPromise();
+          operationsReussies++;
+          console.log(`✅ Question ${questionId} supprimée`);
+        } catch (error: any) {
+          console.warn(`⚠️ Erreur suppression ${questionId}:`, error);
+          
+          if (error.status === 404) {
+            // Question déjà supprimée côté serveur, c'est OK
+            console.log(`ℹ️ Question ${questionId} déjà supprimée côté serveur`);
+            operationsReussies++;
+          } else {
+            operationsEchouees++;
+            erreursDetaillees.push(`Suppression ${questionId}: ${error.message || 'Erreur inconnue'}`);
+          }
+        }
+      }
+
+      // 2. CRÉER les nouvelles questions
+      console.log('➕ Création des nouvelles questions...');
+      for (let i = 0; i < this.questionsACreer.length; i++) {
+        const question = this.questionsACreer[i];
+        try {
+          console.log(`Création question ${i + 1}/${this.questionsACreer.length}`);
+          
+          if (!this.validateQuestion(question)) {
+            throw new Error(`Question invalide: ${question.question || 'question vide'}`);
+          }
+
+          const questionData: NewQuestion = {
+            type: question.type,
+            question: question.question,
+            options: question.options,
+            correctAnswer: question.correctAnswer,
+            points: question.points,
+            explanation: question.explanation || '',
+            quizId: this.quizId
+          };
+
+          const questionCreee = await this.quizService.createQuestion(this.quizId, questionData).toPromise();
+          
+          if (questionCreee) {
+            // Mettre à jour l'ID dans la liste locale
+            const index = this.questions.findIndex(q => q === question);
+            if (index > -1) {
+              this.questions[index] = questionCreee;
+            }
+            operationsReussies++;
+            console.log(`✅ Question créée avec ID: ${questionCreee.id}`);
+          } else {
+            throw new Error('Réponse vide du serveur');
+          }
+          
+        } catch (error: any) {
+          console.error(`❌ Erreur création question ${i + 1}:`, error);
+          operationsEchouees++;
+          erreursDetaillees.push(`Création question "${question.question}": ${error.message || 'Erreur inconnue'}`);
+        }
+      }
+
+      // 3. METTRE À JOUR les questions modifiées (avec gestion 404)
+      console.log('✏️ Mise à jour des questions modifiées...');
+      for (const questionId of this.questionsModifiees) {
+        const question = this.questions.find(q => q.id === questionId);
+        if (!question) {
+          console.warn(`Question ${questionId} introuvable dans la liste locale`);
+          continue;
+        }
+
+        try {
+          console.log(`Mise à jour question ${questionId}`);
+          
+          if (!this.validateQuestion(question)) {
+            throw new Error(`Question invalide: ${question.question}`);
+          }
+
+          const questionData: NewQuestion = {
+            type: question.type,
+            question: question.question,
+            options: question.options,
+            correctAnswer: question.correctAnswer,
+            points: question.points,
+            explanation: question.explanation || '',
+            quizId: this.quizId
+          };
+
+          await this.quizService.updateQuestion(questionId, questionData).toPromise();
+          operationsReussies++;
+          console.log(`✅ Question ${questionId} mise à jour`);
+          
+        } catch (error: any) {
+          console.warn(`⚠️ Erreur mise à jour ${questionId}:`, error);
+          
+          if (error.status === 404) {
+            // Question supprimée côté serveur, essayer de la recréer
+            console.log(`ℹ️ Question ${questionId} n'existe plus, tentative de recréation...`);
+            try {
+              const questionData: NewQuestion = {
+                type: question.type,
+                question: question.question,
+                options: question.options,
+                correctAnswer: question.correctAnswer,
+                points: question.points,
+                explanation: question.explanation || '',
+                quizId: this.quizId
+              };
+
+              const questionRecreee = await this.quizService.createQuestion(this.quizId, questionData).toPromise();
+              if (questionRecreee) {
+                // Mettre à jour l'ID dans la liste locale
+                question.id = questionRecreee.id;
+                operationsReussies++;
+                console.log(`✅ Question recréée avec nouvel ID: ${questionRecreee.id}`);
+              }
+            } catch (recreationError: any) {
+              operationsEchouees++;
+              erreursDetaillees.push(`Recréation ${questionId}: ${recreationError.message || 'Erreur inconnue'}`);
+            }
+          } else {
+            operationsEchouees++;
+            erreursDetaillees.push(`Mise à jour ${questionId}: ${error.message || 'Erreur inconnue'}`);
+          }
+        }
+      }
+
+      // 4. NETTOYER les marqueurs de modification
+      this.questionsModifiees.clear();
+      this.questionsACreer = [];
+      this.questionsASupprimer.clear();
+      this.modificationsPendantes = false;
+
+      // 5. RECHARGER depuis le serveur pour vérifier la cohérence
+      console.log('🔄 Rechargement des données depuis le serveur...');
+      await this.loadQuestionsFromServer();
+
+      // 6. AFFICHER le résultat
+      const totalOperations = operationsReussies + operationsEchouees;
+      let message = '';
+      
+      if (operationsEchouees === 0) {
+        message = `✅ Synchronisation réussie! ${operationsReussies} opération(s) effectuée(s).`;
+        console.log('🎉 Synchronisation 100% réussie!');
+      } else if (operationsReussies > 0) {
+        message = `⚠️ Synchronisation partielle: ${operationsReussies} réussie(s), ${operationsEchouees} échouée(s).`;
+        if (erreursDetaillees.length > 0) {
+          message += '\n\nErreurs:\n' + erreursDetaillees.join('\n');
+        }
+        console.log('⚠️ Synchronisation partielle terminée');
+      } else {
+        message = `❌ Synchronisation échouée: ${operationsEchouees} erreur(s).`;
+        if (erreursDetaillees.length > 0) {
+          message += '\n\nErreurs:\n' + erreursDetaillees.join('\n');
+        }
+        console.error('❌ Synchronisation complètement échouée');
+      }
+      
+      alert(message);
+
+    } catch (error: any) {
+      console.error('💥 Erreur critique lors de la synchronisation:', error);
+      
+      let messageErreur = 'Erreur critique lors de la synchronisation:\n';
+      
+      if (error.status) {
+        switch (error.status) {
+          case 401:
+            messageErreur += 'Non autorisé. Veuillez vous reconnecter.';
+            break;
+          case 403:
+            messageErreur += 'Accès interdit. Vérifiez vos permissions.';
+            break;
+          case 500:
+            messageErreur += 'Erreur serveur. Veuillez réessayer plus tard.';
+            break;
+          case 0:
+            messageErreur += 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+            break;
+          default:
+            messageErreur += `Erreur HTTP ${error.status}: ${error.message || 'Erreur inconnue'}`;
+        }
+      } else {
+        messageErreur += error.message || 'Erreur inconnue';
+      }
+      
+      alert(messageErreur);
+    }
+  }
+
+  // Vérifier s'il y a des modifications pendantes
+  aDesModificationsPendantes(): boolean {
+    return this.modificationsPendantes;
+  }
+
+  // Méthode de diagnostic pour identifier les problèmes
+  async diagnostiquerProblemes() {
+    console.log('🔍 Diagnostic des problèmes...');
+    
+    if (!this.quizId) {
+      console.error('❌ Quiz ID manquant');
+      return;
+    }
+
+    try {
+      // 1. Vérifier si le quiz existe
+      console.log('Vérification du quiz...');
+      const quiz = await this.quizService.getQuizById(this.quizId).toPromise();
+      
+      if (!quiz) {
+        throw new Error('Quiz non trouvé');
+      }
+      
+      console.log('✅ Quiz trouvé:', quiz.title);
+
+      // 2. Vérifier les questions côté serveur
+      console.log('Vérification des questions côté serveur...');
+      const questionsServeur = await this.quizService.getQuestionsByQuiz(this.quizId).toPromise();
+      
+      if (!questionsServeur) {
+        throw new Error('Questions serveur non trouvées');
+      }
+      
+      console.log(`✅ ${questionsServeur.length} questions trouvées côté serveur`);
+
+      // 3. Comparer avec les questions locales
+      console.log('Comparaison local vs serveur:');
+      console.log(`- Local: ${this.questions.length} questions`);
+      console.log(`- Serveur: ${questionsServeur.length} questions`);
+
+      // 4. Vérifier les IDs des questions locales
+      const questionsAvecId = this.questions.filter(q => q.id);
+      const questionsSansId = this.questions.filter(q => !q.id);
+      
+      console.log(`- Questions locales avec ID: ${questionsAvecId.length}`);
+      console.log(`- Questions locales sans ID: ${questionsSansId.length}`);
+
+      // 5. Vérifier si les IDs locaux existent côté serveur
+      const idsServeur = new Set(questionsServeur.map(q => q.id));
+      const idsLocauxInexistants = questionsAvecId.filter(q => q.id && !idsServeur.has(q.id)).map(q => q.id);
+      
+      if (idsLocauxInexistants.length > 0) {
+        console.warn('⚠️ IDs locaux inexistants côté serveur:', idsLocauxInexistants);
+      }
+
+      // 6. Rapport de diagnostic
+      let rapport = `📊 DIAGNOSTIC:\n`;
+      rapport += `Quiz ID: ${this.quizId}\n`;
+      rapport += `Quiz titre: ${quiz.title}\n\n`;
+      rapport += `Questions locales: ${this.questions.length}\n`;
+      rapport += `Questions serveur: ${questionsServeur.length}\n`;
+      rapport += `Questions avec ID: ${questionsAvecId.length}\n`;
+      rapport += `Questions sans ID: ${questionsSansId.length}\n`;
+      
+      if (idsLocauxInexistants.length > 0) {
+        rapport += `\n⚠️ PROBLÈME: ${idsLocauxInexistants.length} question(s) locale(s) avec des IDs inexistants côté serveur\n`;
+        rapport += `IDs problématiques: ${idsLocauxInexistants.join(', ')}\n`;
+        rapport += `\nSOLUTION: Ces questions seront recréées lors de la synchronisation.`;
+      }
+
+      console.log(rapport);
+      alert(rapport);
+
+    } catch (error: any) {
+      console.error('❌ Erreur diagnostic:', error);
+      alert(`Erreur diagnostic: ${error.message || 'Erreur inconnue'}`);
+    }
+  }
+
+  // Méthode pour forcer une synchronisation complète (reset)
+  async forcerSynchronisationComplete() {
+    if (!confirm('ATTENTION: Ceci va recharger toutes les questions depuis le serveur et perdre vos modifications non sauvegardées. Continuer ?')) {
+      return;
+    }
+
+    try {
+      console.log('🔄 Rechargement complet depuis le serveur...');
+      
+      // Reset complet
+      this.questionsModifiees.clear();
+      this.questionsACreer = [];
+      this.questionsASupprimer.clear();
+      this.modificationsPendantes = false;
+      
+      // Recharger depuis le serveur
+      await this.loadQuestionsFromServer();
+      
+      alert('✅ Synchronisation complète terminée. Toutes les données ont été rechargées depuis le serveur.');
+      
+    } catch (error: any) {
+      console.error('❌ Erreur synchronisation complète:', error);
+      alert(`Erreur: ${error.message || 'Erreur inconnue'}`);
+    }
+  }
+
+  // Annuler toutes les modifications (recharger depuis le serveur)
+  annulerModifications() {
+    if (!confirm('Êtes-vous sûr de vouloir annuler toutes les modifications non sauvegardées ?')) {
+      return;
+    }
+
+    this.questionsModifiees.clear();
+    this.questionsACreer = [];
+    this.questionsASupprimer.clear();
+    this.modificationsPendantes = false;
+    
+    this.loadQuestionsFromServer();
+    alert('Modifications annulées. Données rechargées depuis le serveur.');
   }
 }
