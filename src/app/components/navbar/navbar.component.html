@@ -2,7 +2,7 @@
   <div class="navbar-container">
     <div class="navbar-brand">
       <div class="logo">
-        <img src="/logoo.jpg" alt="Expleo Logo" class="logo-icon" />
+        <img src="/assets/logoo.jpg" alt="Expleo Logo" class="logo-icon" />
       </div>
     </div>
 
@@ -34,10 +34,10 @@
 
     <div class="navbar-user" *ngIf="user">
       <div class="user-info">
-        <div class="user-avatar">{{ user.avatar }}</div>
-        <div class="user-details">
+        <img class="user-avatar"
+        [src]="user.avatar ? 'assets/avatars/' + user.avatar : 'assets/default-avatar.jpg'"
+        alt="Avatar" width="36" height="36">        <div class="user-details">
           <span class="user-name">{{ user.username }}</span>
-          <span class="user-points">{{ user.totalPoints }} pts</span>
         </div>
       </div>
     </div>

@@ -88,5 +88,11 @@ export class AuthService {
   }): Observable<any> {
     return this.http.post('http://localhost:3000/api/auth/register', userData);
   }
-  
+
+
+  // Cette méthode met à jour l’utilisateur partout !
+  updateCurrentUser(user: User) {
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
 }

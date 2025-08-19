@@ -9,14 +9,18 @@
   <div class="profile-container" *ngIf="user; else notConnected">
     <div class="profile-card">
       <div class="profile-avatar">
-        <img *ngIf="user.avatar; else defaultAvatar" [src]="user.avatar" alt="Avatar" />
-        <ng-template #defaultAvatar>
-          <img src="/assets/default-avatar.png" alt="Avatar par défaut" />
-        </ng-template>
-        <button class="avatar-edit-btn" title="Modifier l'avatar">
-          ✏️
-        </button>
-      </div>
+        <img [src]="user.avatar ? 'assets/avatars/' + user.avatar : 'assets/default-avatar.jpg'" alt="Avatar" />        <button class="avatar-edit-btn" title="Modifier l'avatar" (click)="openAvatarSelector()">✏️</button>
+
+        <div class="avatar-selector-modal" *ngIf="showAvatarSelector">
+          <div class="avatar-selector">
+            <div *ngFor="let avatar of availableAvatars" class="avatar-option">
+              <img [src]="'assets/avatars/' + avatar" alt="Avatar"
+                   (click)="selectAvatar(avatar)" [class.selected]="avatar === user.avatar" />
+            </div>
+            <button (click)="showAvatarSelector = false">Annuler</button>
+          </div>
+        </div>
+        </div>
 
       <div class="profile-info">
         <div class="input-group">
@@ -37,7 +41,9 @@
             <option>EES : Electronic Embedded Systems</option>
             <option>DET : Digital and Technology</option>
             <option>MPE : Mechanical Product Engineering</option>
-            <option>CSP / SGA</option>
+            <option>CSP </option>
+            <option>SGA</option>
+
           </select>
           <label>CBU</label>
         </div>
@@ -51,7 +57,7 @@
     </div>
 
     <div class="profile-actions">
-      <!-- <button class="btn btn-primary" (click)="onSave()"> Sauvegarder</button> -->
+      <button class="btn btn-primary" (click)="onSave()" [disabled]="!hasChanges()">Sauvegarder</button>
       <button class="btn btn-secondary" (click)="onCancel()"> Annuler</button>
     </div>
   </div>
