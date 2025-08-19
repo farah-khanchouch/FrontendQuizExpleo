@@ -10,6 +10,7 @@ export interface User {
     totalPoints: number;
     badges: Badge[];
     completedQuizzes: string[];
+    
   }
   export interface Badge {
     icon: string;

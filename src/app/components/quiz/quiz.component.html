@@ -1,119 +1,188 @@
 <div class="quiz-page">
-      <app-navbar></app-navbar>
-      
-      <div class="quiz-container" *ngIf="quiz && !isLoading">
-        <div class="quiz-header">
-          <div class="quiz-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
-            </div>
-            <div class="progress-text">
-              Question {{ currentQuestionIndex + 1 }} sur {{ quiz.questionCount }}
+  <app-navbar></app-navbar>
 
-            </div>
-          </div>
-          
-          <div class="quiz-info">
-            <h1>{{ quiz.title }}</h1>
-            <div class="quiz-stats">
-              <span class="stat"> {{ quiz.duration }} min</span>
-              <span class="stat"> {{ quiz.points }} pts</span>
-            </div>
-          </div>
+  <!-- Loading State -->
+  <div class="loading" *ngIf="isLoading">
+    <div class="loading-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
+    <p class="loading-text">Chargement de votre quiz...</p>
+  </div>
+
+  <!-- Quiz Content -->
+  <div class="quiz-container" *ngIf="quiz && !isLoading && currentQuestion">
+    <!-- Quiz Header avec Timer -->
+    <div class="quiz-header">
+      <div class="quiz-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
         </div>
-
-        <div class="question-section">
-          <div class="question-card">
-            <div class="question-header">
-              <h2>{{ currentQuestion.question }}</h2>
-              <div class="question-points">{{ currentQuestion.points }} pts</div>
-            </div>
-
-            <div class="answers-grid">
-              <div 
-                *ngFor="let option of currentQuestion.options; let i = index"
-                class="answer-option"
-                [class.selected]="selectedAnswer === option"
-                [class.correct]="showResult && option === currentQuestion.correctAnswer"
-                [class.incorrect]="showResult && selectedAnswer === option && option !== currentQuestion.correctAnswer"
-                (click)="selectAnswer(option)"
-              >
-                <div class="option-letter">{{ getOptionLetter(i) }}</div>
-                <div class="option-text">{{ option }}</div>
-                <div class="option-feedback" *ngIf="showResult">
-                  <span *ngIf="option === currentQuestion.correctAnswer" class="correct-icon">✅</span>
-                  <span *ngIf="selectedAnswer === option && option !== currentQuestion.correctAnswer" class="incorrect-icon">❌</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="explanation" *ngIf="showResult && currentQuestion.explanation">
-              <div class="explanation-header">💡 Explication</div>
-              <p>{{ currentQuestion.explanation }}</p>
-            </div>
-          </div>
-
-          <div class="question-actions">
-            <button 
-              *ngIf="!showResult"
-              (click)="submitAnswer()" 
-              [disabled]="!selectedAnswer"
-              class="submit-btn"
-            >
-              Valider la réponse
-            </button>
-            
-            <button 
-              *ngIf="showResult && !isLastQuestion()"
-              (click)="nextQuestion()" 
-              class="next-btn"
-            >
-              Question suivante
-            </button>
-            
-            <button 
-              *ngIf="showResult && isLastQuestion()"
-              (click)="finishQuiz()" 
-              class="finish-btn"
-            >
-              Terminer le quiz
-            </button>
-          </div>
-        </div>
-
-        <div class="quiz-sidebar">
-          <div class="score-card">
-            <h3>Votre score</h3>
-            <div class="score-display">
-              <div class="score-number">{{ score }}</div>
-              <div class="score-label">/ {{ quiz.points }}</div>
-            </div>
-          </div>
-
-          <div class="questions-overview">
-            <h3>Questions</h3>
-            <div class="questions-grid">
-              <ng-container *ngFor="let question of quiz.questions; let i = index">
-                <div 
-                  *ngIf="question.id !== undefined"
-                  class="question-bubble"
-                  [class.current]="i === currentQuestionIndex"
-                  [class.completed]="answers[question.id] !== undefined"
-                  [class.correct]="answers[question.id] === question.correctAnswer"
-                  [class.incorrect]="answers[question.id] !== undefined && answers[question.id] !== question.correctAnswer"
-                >
-                  {{ i + 1 }}
-                </div>
-              </ng-container>
-            </div>
-            
-            
-          </div>
+        <div class="progress-info">
+          <span>
+            Question {{ currentQuestionIndex + 1 }} sur {{ quiz.questionCount || quiz.questions.length }}
+          </span>
+                    <span class="time-remaining" *ngIf="timeRemaining > 0">
+            ⏰ {{ formatTime(timeRemaining) }}
+          </span>
         </div>
       </div>
 
-      <div class="loading" *ngIf="isLoading">
-        <div class="spinner">🔄</div>
-        <p>Chargement du quiz...</p>
+      <div class="quiz-info">
+        <h1>{{ quiz.title }}</h1>
+        <div class="quiz-meta">
+          <span class="meta-item">📚 {{ quiz.theme }}</span>
+          <span class="meta-item">💎 {{ quiz.points }} pts</span>
+          <span class="meta-item">⏱️ {{ quiz.duration }} min</span>
+          <span class="meta-item" *ngIf="quiz.participants">👥 {{ quiz.participants }} participants</span>
+        </div>
       </div>
     </div>
+
+    <!-- Question Section -->
+    <div class="question-section">
+      <div class="question-card" [attr.data-type]="currentQuestion.type">
+        <div class="question-header">
+          <div class="question-type-badge" [ngClass]="getTypeBadgeClass(currentQuestion.type)">
+            {{ getTypeLabel(currentQuestion.type) }}
+          </div>
+          <div class="question-points">{{ currentQuestion.points }} pts</div>
+        </div>
+
+        <h2 class="question-title">{{ currentQuestion.question }}</h2>
+
+        <!-- Hint -->
+        <div class="question-hint" *ngIf="hasHint(currentQuestion) && showHint">
+          <span class="hint-icon">💡</span>
+          <span class="hint-text">{{ getHint(currentQuestion) }}</span>
+        </div>
+        <button class="hint-btn" *ngIf="hasHint(currentQuestion) && !showHint" (click)="showHint = true">
+          💡 Afficher l'indice
+        </button>
+
+        <!-- Answers based on question type -->
+        <div class="answers-container">
+          <!-- Multiple Choice Questions -->
+          <div class="answers-grid mcq" *ngIf="currentQuestion.type === 'qcm'">
+            <div *ngFor="let option of currentQuestion.options; let i = index" class="answer-option"
+              [class.selected]="isOptionSelected(option, i)"
+              [class.incorrect]="showResult && isOptionSelected(option, i) && !isOptionCorrect(option, i)"
+              (click)="selectAnswer(option, i)">
+              <div class="option-letter">{{ getOptionLetter(i) }}</div>
+              <div class="option-text">{{ option }}</div>
+              <div class="option-feedback" *ngIf="showResult">
+                <span class="correct-icon" *ngIf="isOptionCorrect(option, i)">✅</span>
+                <span class="incorrect-icon" *ngIf="isOptionSelected(option, i) && !isOptionCorrect(option, i)">❌</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- True/False Questions -->
+          <div class="answers-grid tf" *ngIf="currentQuestion.type === 'vrai-faux'">
+            <div *ngFor="let option of currentQuestion.options; let i = index" class="answer-option tf-option"
+              [class.selected]="selectedAnswer === option"
+              [class.correct]="showResult && isTFOptionCorrect(option)"
+              [class.incorrect]="showResult && selectedAnswer === option && !isTFOptionCorrect(option)" (click)="selectAnswer(option)">
+              <div class="tf-icon">
+                {{ option === 'Vrai' ? '✓' : '✗' }}
+              </div>
+              <div class="option-text">{{ option }}</div>
+              <div class="option-feedback" *ngIf="showResult">
+                <span class="correct-icon" *ngIf="isTFOptionCorrect(option)">✅</span>
+                <span class="incorrect-icon" *ngIf="selectedAnswer === option && !isTFOptionCorrect(option)">❌</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Short Answer Questions -->
+          <div class="short-answer-container" *ngIf="currentQuestion.type === 'libre'">
+            <div class="input-wrapper">
+              <input type="text" [value]="selectedAnswer" (input)="onShortAnswerChange($event)"
+                placeholder="Tapez votre réponse ici..." class="short-answer-input"
+                [class.correct]="showResult && isAnswerCorrect()" [class.incorrect]="showResult && !isAnswerCorrect()"
+                [disabled]="showResult" />
+              <div class="input-feedback" *ngIf="showResult">
+                <span class="correct-icon" *ngIf="isAnswerCorrect()">✅</span>
+                <span class="incorrect-icon" *ngIf="!isAnswerCorrect()">❌</span>
+              </div>
+            </div>
+            <div class="character-count">{{ getSelectedAnswerLength() }} caractères</div>
+            <div class="correct-answer" *ngIf="showResult && !isAnswerCorrect()">
+              <span class="correct-label">Réponse correcte :</span>
+              <span class="correct-value">{{
+                isArray(currentQuestion.correctAnswer)
+                ? join(currentQuestion.correctAnswer, ', ')
+                : currentQuestion.correctAnswer
+                }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="explanation" *ngIf="showResult && currentQuestion.explanation">
+          <div class="explanation-header">
+            <span class="explanation-icon">🧠</span>
+            <span class="explanation-title">Explication</span>
+          </div>
+          <p class="explanation-text">{{ currentQuestion.explanation }}</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="question-actions">
+        <button *ngIf="!showResult" (click)="submitAnswer()"
+          [disabled]="(selectedAnswer === null || selectedAnswer === undefined) && selectedAnswer !== 0 || (typeof selectedAnswer === 'string' && selectedAnswer.trim() === '')"
+          class="submit-btn">
+          <span>Valider ma réponse</span>
+          <span class="btn-icon">→</span>
+        </button>
+
+        <button *ngIf="showResult && !isLastQuestion()" (click)="nextQuestion()" class="next-btn">
+          <span>Question suivante</span>
+          <span class="btn-icon">→</span>
+        </button>
+
+        <button *ngIf="showResult && isLastQuestion()" (click)="finishQuiz()" class="finish-btn">
+          <span>Voir mes résultats</span>
+          <span class="btn-icon">🏆</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quiz Sidebar -->
+    <div class="quiz-sidebar">
+      <div class="score-card">
+        <h3>💯 Score Actuel</h3>
+        <div class="score-display">
+          <div class="score-number">{{ pointsEarned }}</div>
+          <div class="score-separator">/</div>
+          <div class="score-total">{{ quiz.points }}</div>
+        </div>
+        <div class="score-percentage">{{ getScorePercentage() }}%</div>
+        <div class="correct-answers" *ngIf="correctAnswers > 0">
+          <span class="correct-count">✅ {{ correctAnswers }} bonnes réponses</span>
+        </div>
+      </div>
+
+      <div class="questions-overview">
+        <h3>📋 Progression</h3>
+        <div class="questions-grid">
+          <div *ngFor="let question of quiz.questions; let i = index" class="question-bubble"
+            [class.current]="i === currentQuestionIndex" [class.completed]="answers[question.id!] !== undefined"
+            [class.correct]="isQuestionCorrect(question.id!)"
+            [class.incorrect]="answers[question.id!] !== undefined && !isQuestionCorrect(question.id!)"
+            [attr.data-type]="question.type">
+            <span class="bubble-number">{{ i + 1 }}</span>
+            <span class="bubble-type">{{ getTypeIcon(question.type) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz Not Found -->
+  <div class="loading" *ngIf="!quiz && !isLoading">
+    <p class="loading-text">Quiz non trouvé</p>
+  </div>
+</div>

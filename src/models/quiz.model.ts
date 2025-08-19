@@ -40,10 +40,11 @@ export interface Question {
   question: string;
   type: 'qcm' | 'vrai-faux' | 'libre';
   options?: string[];
-  correctAnswer: string | string[]| number;
+  correctAnswer: number | number[] | string | boolean;
   explanation?: string;
   points: number;
   quizId?: string;
+  
 }
 export interface BadgeCreateDto {
   name: string;

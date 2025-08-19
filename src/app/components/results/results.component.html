@@ -1,114 +1,131 @@
-<div class="results-page">
-      <app-navbar></app-navbar>
+<div class="result-page">
+  <app-navbar></app-navbar>
+  
+  <div class="result-container" *ngIf="quiz">
+    <!-- Header avec animation -->
+    <div class="result-header">
+      <div class="celebration-animation">
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+      </div>
       
-      <div class="results-container" *ngIf="quiz">
-        <div class="results-header">
-          <div class="celebration-animation">
-            <div class="confetti">🎉</div>
-            <div class="confetti">🎊</div>
-            <div class="confetti">✨</div>
-            <div class="confetti">🌟</div>
+      <div class="result-title">
+        <h1>🎉 Quiz Terminé !</h1>
+        <p>{{ quiz.title }}</p>
+      </div>
+    </div>
+
+    <!-- Badge Section -->
+    <div class="badge-section" *ngIf="earnedBadges.length > 0">
+      <div class="badge-card" 
+           *ngFor="let badge of earnedBadges" 
+           [style.background]="getBadgeGradient(badge)">
+        <div class="badge-icon">{{ badge.icon }}</div>
+        <div class="badge-info">
+          <h2 class="badge-name">{{ badge.name }}</h2>
+          <p class="badge-description">{{ badge.description }}</p>
+          <div class="badge-requirement">{{ badge.requirement }}</div>
+        </div>
+        <div class="badge-shine"></div>
+      </div>
+    </div>
+
+    <!-- Score Section -->
+    <div class="score-section">
+      <div class="score-card">
+        <div class="score-header">
+          <h3> Votre Performance</h3>
+        </div>
+        
+        <div class="score-display">
+          <div class="main-score">
+            <div class="score-number">{{ userScore }}</div>
+            <div class="score-separator">/</div>
+            <div class="score-total">{{ quiz.points }}</div>
+          </div>
+          <div class="score-label">points</div>
+        </div>
+        
+        <div class="percentage-display">
+          <div class="percentage-circle" [style.background]="getPercentageGradient()">
+            <span class="percentage-text">{{ scorePercentage }}%</span>
+          </div>
+        </div>
+        
+        <div class="performance-level">
+          <span class="level-label">Niveau de Performance:</span>
+          <span class="level-value" [style.color]="getPerformanceColor()">{{ getPerformanceLevel() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Results -->
+    <div class="details-section">
+      <div class="details-card">
+        <h3> Analyse Détaillée</h3>
+        
+        <div class="stats-grid">
+          <div class="stat-item correct">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">{{ correctAnswers }}</div>
+            <div class="stat-label">Réponses Correctes</div>
           </div>
           
-          <h1 class="results-title">Quiz Terminé !</h1>
-          <p class="quiz-name">{{ quiz.title }}</p>
-        </div>
-
-        <div class="results-content">
-          <div class="score-section">
-            <div class="score-card">
-              <div class="score-header">
-                <h2>Votre Score</h2>
-                <div class="score-emoji">{{ getScoreEmoji() }}</div>
-              </div>
-              
-              <div class="score-display">
-                <div class="score-circle">
-                  <div class="score-text">
-                    <span class="score-number">{{ scorePercentage }}%</span>
-                    <span class="score-points">{{ userScore }} / {{ quiz.points }} pts</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="score-message">
-                <h3>{{ getScoreMessage() }}</h3>
-                <p>{{ getEncouragementMessage() }}</p>
-              </div>
-            </div>
+          <div class="stat-item incorrect">
+            <div class="stat-icon">❌</div>
+            <div class="stat-value">{{ incorrectAnswers }}</div>
+            <div class="stat-label">Réponses Incorrectes</div>
           </div>
-
-          <div class="stats-section">
-            <div class="stat-card">
-              <div class="stat-icon">✅</div>
-              <div class="stat-value">{{ correctAnswers }}</div>
-              <div class="stat-label">Bonnes réponses</div>
-            </div>
-            
-            <div class="stat-card">
-              <div class="stat-icon">❌</div>
-              <div class="stat-value">{{ incorrectAnswers }}</div>
-              <div class="stat-label">Mauvaises réponses</div>
-            </div>
-            
-            <div class="stat-card">
-              <div class="stat-icon"></div>
-              <div class="stat-value">{{ quiz.duration }}</div>
-              <div class="stat-label">Minutes allouées</div>
-            </div>
-            
-            <div class="stat-card">
-              <div class="stat-icon">📊</div>
-              <div class="stat-value">{{ quiz.questions.length }}</div>
-              <div class="stat-label">Questions totales</div>
-            </div>
+          
+          <div class="stat-item time">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-value">{{ getTimeSpent() }}</div>
+            <div class="stat-label">Temps Passé</div>
           </div>
-
-          <div class="badges-section" *ngIf="earnedBadges.length > 0">
-            <h2>🏅 Badges Obtenus</h2>
-            <div class="badges-grid">
-              <div *ngFor="let badge of earnedBadges" class="badge-card">
-                <div class="badge-icon">{{ badge.icon }}</div>
-                <div class="badge-info">
-                  <h4>{{ badge.name }}</h4>
-                  <p>{{ badge.description }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="performance-section">
-            <h2>📈 Analyse de Performance</h2>
-            <div class="performance-chart">
-              <div class="chart-bar">
-                <div class="chart-label">Réussite</div>
-                <div class="chart-progress">
-                  <div class="progress-bar success" [style.width.%]="scorePercentage">
-                    <span class="progress-text">{{ scorePercentage }}%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="performance-tips">
-              <h3>💡 Conseils pour progresser</h3>
-              <ul>
-                <li *ngFor="let tip of getImprovementTips()">{{ tip }}</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="actions-section">
-            <button routerLink="/quizzes" class="btn btn-primary">
-              Découvrir d'autres quiz
-            </button>
-            <button [routerLink]="['/quiz', quiz.id]" class="btn btn-secondary">
-              Refaire ce quiz
-            </button>
-            <button routerLink="/dashboard" class="btn btn-tertiary">
-              Retour au tableau de bord
-            </button>
+          
+          <div class="stat-item accuracy">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">{{ scorePercentage }}%</div>
+            <div class="stat-label">Précision</div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Encouragement Message -->
+    <div class="message-section">
+      <div class="message-card" [ngClass]="getMessageClass()">
+        <div class="message-icon">{{ getMessageIcon() }}</div>
+        <div class="message-content">
+          <h4>{{ getScoreMessage() }}</h4>
+          <p>{{ getEncouragementMessage() }}</p>
+        </div>
+      </div>
+    </div>
+
+  
+
+    <!-- Action Buttons -->
+    <div class="action-section">
+      <div class="action-buttons">
+        <button class="btn btn-primary" [routerLink]="['/quiz', quiz.id]">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-text">Refaire le Quiz</span>
+        </button>
+        
+        <button class="btn btn-secondary" routerLink="/quizzes">
+          <span class="btn-icon">📚</span>
+          <span class="btn-text">Autres Quiz</span>
+        </button>
+        
+        <button class="btn btn-tertiary" routerLink="/dashboard">
+          <span class="btn-icon">🏠</span>
+          <span class="btn-text">Tableau de Bord</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

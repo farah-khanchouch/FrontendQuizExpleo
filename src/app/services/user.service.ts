@@ -53,4 +53,8 @@ export class UserService {
   createUser(user: User): Observable<User> {
     return this.http.post<User>(this.apiUrl, user);
   }
+  // user.service.ts
+updateAvatar(userId: string, avatar: string) {
+  return this.http.patch<User>(`http://localhost:3000/api/users/${userId}`, { avatar });
+}
 }

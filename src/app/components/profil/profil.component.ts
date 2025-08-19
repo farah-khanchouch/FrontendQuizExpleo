@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../../models/user.model'; // Vérifie ce chemin
 import { NavbarComponent } from '../navbar/navbar.component';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-profil',
@@ -16,9 +16,11 @@ import { NavbarComponent } from '../navbar/navbar.component';
 })
 
 export class ProfilComponent implements OnInit {
+  
   user: User | null = null;
 
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, 
+    private userService: UserService) { }
 
 
   editableUser: any = {};
@@ -107,5 +109,15 @@ export class ProfilComponent implements OnInit {
       this.editableUser.email !== this.originalUser.email ||
       this.editableUser.cbu !== this.originalUser.cbu ||
       this.editableUser.avatar !== this.originalUser.avatar;
+  }
+  updateAvatar(nouvelAvatar: string) {
+    this.userService.updateAvatar(this.editableUser.id, nouvelAvatar).subscribe(
+      (user: any) => {
+        this.editableUser.avatar = user.avatar;
+        this.originalUser.avatar = user.avatar;
+        // Mets à jour l'utilisateur global partout :
+        this.authService.updateCurrentUser(user);
+      }
+    );
   }
 }

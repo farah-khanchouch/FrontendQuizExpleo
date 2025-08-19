@@ -12,8 +12,7 @@ interface Question {
   type: 'qcm' | 'vrai-faux' | 'libre';
   question: string;
   options?: string[];
-  correctAnswer: string | number | string[];
-  points: number;
+  correctAnswer: number | number[] | string | boolean;  points: number;
   explanation?: string;
   quizId?: string;
 }
@@ -22,7 +21,7 @@ export interface NewQuestion {
   type: 'qcm' | 'vrai-faux' | 'libre';
   question: string;
   options?: string[];
-  correctAnswer: string | number | string[];
+  correctAnswer: number | number[] | string | boolean; // <-- Nouveau type
   points: number;
   explanation?: string;
   quizId?: string;
@@ -246,7 +245,14 @@ export class QuestionManagementComponent implements OnInit {
       alert('Veuillez remplir tous les champs obligatoires.');
       return;
     }
-
+  // PATCH : conversion automatique pour vrai-faux
+  if (this.newQuestion.type === 'vrai-faux') {
+    if (this.newQuestion.correctAnswer === 'Vrai' || this.newQuestion.correctAnswer === true) {
+      this.newQuestion.correctAnswer = true;
+    } else if (this.newQuestion.correctAnswer === 'Faux' || this.newQuestion.correctAnswer === false) {
+      this.newQuestion.correctAnswer = false;
+    }
+  }
     if (!this.quizId) {
       alert('Erreur: ID du quiz manquant. Impossible de créer la question.');
       return;
