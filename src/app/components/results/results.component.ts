@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { QuizService } from '../../services/quiz.service';
+import { StatsService, QuizResult } from '../../services/stats.service'; // Import ajouté
+import { AuthService } from '../../services/auth.service'; // Import ajouté
 import { Quiz } from '../../../models/quiz.model';
+import { BadgeService } from '../../services/badge.service';
+import { Badge } from '../../../models/quiz.model';
 
 @Component({
   selector: 'app-results',
@@ -22,10 +26,15 @@ export class ResultsComponent implements OnInit {
   earnedBadges: any[] = [];
   timeSpent = 0; // En secondes
   isAnimationComplete = false;
+  isSaving = false; // Pour indiquer que la sauvegarde est en cours
 
   constructor(
     private route: ActivatedRoute,
-    private quizService: QuizService
+    private router: Router,
+    private quizService: QuizService,
+    private badgeService: BadgeService,
+    private statsService: StatsService, // Service ajouté
+    private authService: AuthService    // Service ajouté
   ) {}
 
   ngOnInit(): void {
@@ -49,17 +58,87 @@ export class ResultsComponent implements OnInit {
       if (quiz) {
         this.quiz = quiz;
         this.calculateResults();
+        // AJOUT IMPORTANT : Sauvegarder le résultat après avoir chargé le quiz
+        this.saveQuizResult(quizId);
+      }
+    });
+  }
+
+  // NOUVELLE MÉTHODE : Sauvegarde le résultat dans les statistiques
+  private saveQuizResult(quizId: string): void {
+    const user = this.authService.getCurrentUser();
+    if (!user || !this.quiz) {
+      console.error('Utilisateur non connecté ou quiz non chargé');
+      return;
+    }
+
+    this.isSaving = true;
+
+    const quizResult: Partial<QuizResult> = {
+      quizId: quizId,
+      quizTitle: this.quiz.title,
+      theme: this.quiz.theme,
+      score: this.userScore,
+      totalQuestions: this.totalQuestions,
+      correctAnswers: this.correctAnswers,
+      percentage: this.scorePercentage,
+      timeSpent: this.timeSpent,
+      pointsEarned: this.userScore,
+      attempts: 1
+    };
+
+    this.statsService.addQuizResult(quizResult).subscribe({
+      next: (updatedStats) => {
+        console.log('Résultat sauvegardé avec succès', updatedStats);
+        this.isSaving = false;
+      },
+      error: (error) => {
+        console.error('Erreur lors de la sauvegarde du résultat:', error);
+        this.isSaving = false;
+        // Optionnel : Afficher un message d'erreur à l'utilisateur
       }
     });
   }
 
   calculateResults(): void {
     if (!this.quiz) return;
-
+  
     this.scorePercentage = Math.round((this.userScore / this.quiz.points) * 100);
   
-    // Calcul des badges
+    // 1. Calcule les badges front (remplit earnedBadges)
     this.calculateBadges();
+  
+    // 2. Récupère les badges admin et fusionne
+    this.badgeService.getBadges().subscribe((badges: Badge[]) => {
+      const accuracy = this.scorePercentage; // précision en %
+      const timeSpent = this.timeSpent; // temps en secondes
+  
+      const adminBadges = badges.filter(badge => {
+        if (!badge.isActive) return false;
+        if (badge.criteria.startsWith('score>=')) {
+          const minScore = parseInt(badge.criteria.split('>=')[1]);
+          return this.userScore >= minScore;
+        }
+        if (badge.criteria.startsWith('accuracy>=')) {
+          const minAccuracy = parseInt(badge.criteria.split('>=')[1]);
+          return accuracy >= minAccuracy;
+        }
+        if (badge.criteria.startsWith('time<=')) {
+          const maxTime = parseInt(badge.criteria.split('<=')[1]);
+          return timeSpent <= maxTime;
+        }
+        if (badge.criteria === 'completed') {
+          return true;
+        }
+        return false;
+      });
+  
+      // Fusionne les deux listes dans earnedBadges
+      this.earnedBadges = [
+        ...this.earnedBadges, // badges front déjà calculés
+        ...adminBadges        // badges admin venant du backend
+      ];
+    });
   }
 
   calculateBadges(): void {
@@ -241,10 +320,17 @@ export class ResultsComponent implements OnInit {
   }
 
   retakeQuiz(): void {
-    // Navigation vers le quiz
+    if (this.quiz) {
+      this.router.navigate(['/quiz', this.quiz.id]);
+    }
   }
 
   goToQuizList(): void {
-    // Navigation vers la liste des quiz
+    this.router.navigate(['/quiz-list']);
+  }
+
+  // NOUVELLE MÉTHODE : Navigation vers les statistiques
+  goToStats(): void {
+    this.router.navigate(['/stats']);
   }
 }

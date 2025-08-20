@@ -1,36 +1,108 @@
 <app-navbar></app-navbar>
+
 <div class="page-container">
-    <div class="page-header">
-      <h2>Classement</h2>
-      <p>Découvrez votre position parmi vos collègues</p>
-    </div>
+  <div class="page-header">
+    <h2>Classement</h2>
+    <p>Découvrez votre position parmi vos collègues</p>
     
-    <div class="leaderboard">
-      <div class="leaderboard-item" 
-           [ngClass]="{'podium': item.podium, 'first': item.podium === 'first', 'second': item.podium === 'second', 'third': item.podium === 'third', 'current-user': item.currentUser}"
-           *ngFor="let item of leaderboard">
+    <!-- Affichage du rang de l'utilisateur actuel -->
+    <div *ngIf="getCurrentUserRankInfo()" class="user-rank-info">
+      <i class="icon-trophy"></i>
+      {{ getCurrentUserRankInfo() }}
+    </div>
+  </div>
+
+  <!-- État de chargement -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Chargement du classement...</p>
+  </div>
+
+  <!-- État d'erreur -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <i class="icon-alert"></i>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="refreshLeaderboard()">
+        <i class="icon-refresh"></i>
+        Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- Classement -->
+  <div *ngIf="!loading && !error" class="leaderboard">
+    <div class="leaderboard-header">
+      <h3>Top 4 des participants</h3>
+      <button class="btn-refresh" (click)="refreshLeaderboard()" title="Actualiser">
+        <i class="icon-refresh"></i>
+      </button>
+    </div>
+
+    <!-- Message si aucune donnée -->
+    <div *ngIf="leaderboard.length === 0" class="empty-state">
+      <i class="icon-users"></i>
+      <h4>Aucun résultat disponible</h4>
+      <p>Soyez le premier à participer aux quiz !</p>
+    </div>
+
+    <!-- Liste du classement -->
+    <div *ngIf="leaderboard.length > 0" class="leaderboard-list">
+      <div 
+        class="leaderboard-item"
+        [ngClass]="{
+          'podium': item.podium, 
+          'first': item.podium === 'first', 
+          'second': item.podium === 'second', 
+          'third': item.podium === 'third', 
+          'current-user': item.currentUser
+        }"
+        *ngFor="let item of leaderboard; let i = index"
+        [style.animation-delay]="(i * 100) + 'ms'">
+        
         <div class="rank">
-          <!-- Medal icon for podium positions -->
-          <svg *ngIf="item.podium" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
-               [style.color]="item.podium === 'first' ? '#FFD700' : item.podium === 'second' ? '#C0C0C0' : '#CD7F32'">
-            <path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.61 2.14a2 2 0 0 1 .13 2.2L16.79 15"/>
-            <path d="M11 12 5.12 2.2"/>
-            <path d="m13 12 5.88-9.8"/>
-            <path d="M8 7h8"/>
-            <circle cx="12" cy="17" r="5"/>
-            <path d="m9 22 3-3 3 3"/>
-            <path d="M9 19h6"/>
-          </svg>
-          <span>{{item.rank}}</span>
+          <!-- Médaille pour les positions du podium -->
+          <div *ngIf="item.medal" class="medal" [title]="'Position ' + item.rank">
+            {{ item.medal }}
+          </div>
+          <!-- Numéro de rang pour les autres positions -->
+          <span *ngIf="!item.medal" class="rank-number">{{ item.rank }}</span>
         </div>
+
         <div class="user-info">
-          <img [src]="item.avatar" alt="User" />
-          <div>
-            <h4>{{item.name}}</h4>
-            <!-- <span>{{item.cbu}}</span> -->
+          <img [src]="item.avatar" [alt]="item.userName" class="user-avatar" />
+          <div class="user-details">
+            <h4 class="user-name">{{ getDisplayName(item) }}</h4>
+            <span class="user-cbu" *ngIf="item.userCbu">{{ item.userCbu }}</span>
+            <div class="user-stats">
+              <span class="quiz-count">{{ item.completedQuizzes }} quiz{{ item.completedQuizzes > 1 ? 's' : '' }}</span>
+              <span class="average-score">Moy: {{ item.averageScore }}pts</span>
+            </div>
           </div>
         </div>
-        <div class="score">{{item.score}} pts</div>
+
+        <div class="score-info">
+          <div class="total-score">{{ formatScore(item.averageScore) }}</div>
+          <div class="score-label">Total</div>
+        </div>
+
+        <!-- Indicateur utilisateur actuel -->
+        <div *ngIf="item.currentUser" class="current-user-indicator">
+          <i class="icon-user"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques supplémentaires -->
+    <div *ngIf="leaderboard.length > 0" class="leaderboard-stats">
+      <div class="stat-item">
+        <span class="stat-label">Participants actifs:</span>
+        <span class="stat-value">{{ userRank?.totalUsers || leaderboard.length }}</span>
+      </div>
+      <div class="stat-item" *ngIf="leaderboard[0]">
+        <span class="stat-label">Meilleur score:</span>
+        <span class="stat-value">{{ formatScore(leaderboard[0].totalScore) }}</span>
       </div>
     </div>
   </div>
+</div>

@@ -17,8 +17,12 @@ import { DashboardService, UserStats } from '../../services/dashboard.service';
 export class DashboardComponent implements OnInit {
   user: User | null = null;
   availableQuizzes: Quiz[] = [];
-
+  quizzesThisWeek = 0;
+  scoreEvolution = 0;
+  rankingTrend = 'Stable'; // or '↑', '↓'
+  timeSpentThisWeek = 0;
   stats: UserStats = {
+    
     quizCompleted: 0,
     averageScore: 0,
     ranking: 0,
@@ -28,7 +32,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private quizService: QuizService,
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    
     
   ) {}
 
@@ -41,6 +46,7 @@ export class DashboardComponent implements OnInit {
       this.availableQuizzes = quizzes;
     });
     this.getUserStats();
+    
   }
   getUserStats() {
     this.dashboardService.getUserStats().subscribe({
