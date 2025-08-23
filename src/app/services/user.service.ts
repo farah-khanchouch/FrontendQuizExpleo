@@ -3,7 +3,6 @@ import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
-
 // Modèle User simple (tu peux ajuster)
 export interface User {
   id: string;
@@ -25,7 +24,7 @@ export interface User {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:3000/api/users'; // 🔁 À adapter selon ton backend
+  private apiUrl = 'http://localhost:3000/api/users';
 
   constructor(private http: HttpClient) {}
 
@@ -44,6 +43,16 @@ export class UserService {
     return this.http.patch<User>(`${this.apiUrl}/${id}`, updatedUser);
   }
 
+  // ✅ NOUVEAU : Mettre à jour le profil complet
+  updateProfile(userId: string, profileData: { username?: string, email?: string, cbu?: string, avatar?: string }): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${userId}/profile`, profileData);
+  }
+
+  // ✅ Mettre à jour uniquement l'avatar
+  updateAvatar(userId: string, avatar: string): Observable<User> {
+    return this.http.patch<User>(`${this.apiUrl}/${userId}`, { avatar });
+  }
+
   // ✅ Supprimer un utilisateur
   deleteUser(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
@@ -53,8 +62,4 @@ export class UserService {
   createUser(user: User): Observable<User> {
     return this.http.post<User>(this.apiUrl, user);
   }
-  // user.service.ts
-updateAvatar(userId: string, avatar: string) {
-  return this.http.patch<User>(`http://localhost:3000/api/users/${userId}`, { avatar });
-}
 }

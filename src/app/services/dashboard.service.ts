@@ -90,11 +90,11 @@ export class DashboardService {
     private quizService: QuizService,
     private statsService: StatsService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   loadDashboardData(): Observable<DashboardData> {
     const user = this.authService.getCurrentUser();
-    
+
     if (!user) {
       return of(this.getDefaultDashboardData());
     }
@@ -108,7 +108,7 @@ export class DashboardService {
       map(([stats, allQuizzes, activities, performers]) => {
         // Filtrer les quiz pour l'utilisateur
         const userQuizzes = this.filterQuizzesForUser(allQuizzes, user);
-        
+
         const dashboardData: DashboardData = {
           stats: this.buildStats(stats),
           recentActivities: activities,
@@ -135,7 +135,7 @@ export class DashboardService {
 
   private filterQuizzesForUser(quizzes: Quiz[], user: any): Quiz[] {
     if (!user.cbu) return [];
-    
+
     return quizzes.filter(quiz =>
       quiz.status === 'active' &&
       Array.isArray(quiz.cbus) &&
@@ -164,7 +164,7 @@ export class DashboardService {
   private buildRecommendedQuizzes(userQuizzes: Quiz[], stats: any): RecommendedQuiz[] {
     const completedQuizIds = stats?.recentResults?.map((r: any) => r.quizId) || [];
     const availableQuizzes = userQuizzes.filter(quiz => !completedQuizIds.includes(quiz.id));
-    
+
     return availableQuizzes.slice(0, 6).map(quiz => ({
       id: quiz.id,
       title: quiz.title,
@@ -182,15 +182,15 @@ export class DashboardService {
   private buildLearningPath(userQuizzes: Quiz[], stats: any): LearningPathStep[] {
     const themes = [...new Set(userQuizzes.map(q => q.theme))];
     const completedByTheme = this.getCompletedQuizzesByTheme(stats);
-    
+
     return themes.slice(0, 4).map((theme, index) => {
       const themeQuizzes = userQuizzes.filter(q => q.theme === theme);
       const completed = completedByTheme[theme] || 0;
       const total = themeQuizzes.length;
-      
+
       let status: 'completed' | 'current' | 'locked';
       let statusText: string;
-      
+
       if (completed === total && total > 0) {
         status = 'completed';
         statusText = 'Terminé';
@@ -201,7 +201,7 @@ export class DashboardService {
         status = 'locked';
         statusText = 'Verrouillé';
       }
-      
+
       return {
         step: index + 1,
         title: this.getThemeDisplayName(theme),
@@ -246,7 +246,7 @@ export class DashboardService {
         progress: 'En cours...'
       }
     ];
-    
+
     return achievements;
   }
 
@@ -268,7 +268,7 @@ export class DashboardService {
         icon: 'user',
         title: 'Mon Profil',
         description: 'Gérer mon compte',
-        route: '/profile'
+        route: '/profil'
       },
       {
         icon: 'settings',
@@ -283,7 +283,7 @@ export class DashboardService {
     return this.statsService.stats$.pipe(
       map(stats => {
         if (!stats?.recentResults) return [];
-        
+
         return stats.recentResults.slice(0, 6).map((result: any) => ({
           type: this.getActivityType(result.percentage),
           title: this.getActivityTitle(result),
@@ -344,7 +344,7 @@ export class DashboardService {
   private getBadgeForQuiz(quiz: Quiz): 'new' | 'trending' | 'popular' {
     const createdDate = new Date((quiz as any).createdAt || Date.now());
     const daysDiff = (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
-    
+
     if (daysDiff < 7) return 'new';
     if (Math.random() > 0.7) return 'trending';
     return 'popular';
@@ -364,36 +364,36 @@ export class DashboardService {
 
   private getCompletedQuizzesByTheme(stats: any): { [theme: string]: number } {
     if (!stats?.recentResults) return {};
-    
+
     const byTheme: { [theme: string]: number } = {};
     stats.recentResults.forEach((result: any) => {
       const theme = result.theme || 'general';
       byTheme[theme] = (byTheme[theme] || 0) + 1;
     });
-    
+
     return byTheme;
   }
 
   private getQuizzesThisWeek(stats: any): number {
     if (!stats?.recentResults) return 0;
-    
+
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    return stats.recentResults.filter((result: any) => 
+
+    return stats.recentResults.filter((result: any) =>
       new Date(result.completedAt) >= oneWeekAgo
     ).length;
   }
 
   private getScoreEvolution(stats: any): number {
     if (!stats?.recentResults || stats.recentResults.length < 2) return 0;
-    
+
     const recent = stats.recentResults.slice(0, 5);
     const older = stats.recentResults.slice(5, 10);
-    
+
     const recentAvg = recent.reduce((sum: number, r: any) => sum + r.percentage, 0) / recent.length;
     const olderAvg = older.length > 0 ? older.reduce((sum: number, r: any) => sum + r.percentage, 0) / older.length : recentAvg;
-    
+
     return Math.round(recentAvg - olderAvg);
   }
 
@@ -407,10 +407,10 @@ export class DashboardService {
 
   private getTimeSpentThisWeek(stats: any): number {
     if (!stats?.recentResults) return 0;
-    
+
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
+
     return stats.recentResults
       .filter((result: any) => new Date(result.completedAt) >= oneWeekAgo)
       .reduce((sum: number, result: any) => sum + (result.timeSpent || 0), 0) / 60; // en minutes
@@ -433,7 +433,7 @@ export class DashboardService {
     const now = new Date();
     const past = new Date(date);
     const diffInMinutes = Math.floor((now.getTime() - past.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 60) return `Il y a ${diffInMinutes}min`;
     if (diffInMinutes < 1440) return `Il y a ${Math.floor(diffInMinutes / 60)}h`;
     return `Il y a ${Math.floor(diffInMinutes / 1440)}j`;
@@ -463,4 +463,5 @@ export class DashboardService {
   refreshDashboard(): Observable<DashboardData> {
     return this.loadDashboardData();
   }
+  
 }
