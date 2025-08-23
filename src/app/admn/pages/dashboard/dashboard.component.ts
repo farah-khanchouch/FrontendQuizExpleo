@@ -12,6 +12,7 @@ import { BadgeService } from '../../../services/badge.service';
   styleUrls: ['./dashboard.component.css', '../../global_styles.css']
 })
 export class DashboardComponent implements OnInit {
+  isLoading = true; 
 totalBadges: number = 0;
   constructor(private userService: UserService, private quizService: QuizService, private badgeService: BadgeService) {}
 

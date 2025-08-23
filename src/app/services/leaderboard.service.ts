@@ -36,7 +36,7 @@ export class LeaderboardService {
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) {}
+  ) { }
 
   /**
    * Récupère le classement des top utilisateurs
@@ -67,24 +67,36 @@ export class LeaderboardService {
   /**
    * Traite les données du classement pour l'affichage
    */
+  // Dans leaderboard.service.ts
   private processLeaderboardForDisplay(results: any[]): LeaderboardUser[] {
     const currentUser = this.authService.getCurrentUser();
-    
-    return results.map((user, index) => ({
-      rank: user.rank || (index + 1),
-      userId: user.userId,
-      userName: user.userName || 'Utilisateur inconnu',
-      userCbu: user.userCbu,
-      totalScore: user.totalScore || 0,
-      averageScore: user.averageScore || 0,
-      completedQuizzes: user.completedQuizzes || 0,
-      avatar: this.generateAvatar(user.userName || 'Utilisateur'),
-      medal: this.getMedal(user.rank || (index + 1)),
-      podium: this.getPodiumClass(user.rank || (index + 1)),
-      currentUser: currentUser?.id === user.userId || currentUser?.cbu === user.userId
-    }));
-  }
 
+    return results.map((user, index) => {
+      // Vérifier si c'est l'utilisateur actuel en comparant l'ID ou le CBU
+      let isCurrentUser = false;
+      if (currentUser) {
+        isCurrentUser = (currentUser.id === user.userId || currentUser._id === user.userId) ||
+          (currentUser.cbu === user.userCbu);
+      }
+
+      // Utiliser le nom d'utilisateur ou le CBU comme fallback
+      const displayName = user.userName || user.userCbu || 'Utilisateur inconnu';
+
+      return {
+        rank: user.rank || (index + 1),
+        userId: user.userId,
+        userName: displayName,
+        userCbu: user.userCbu,
+        totalScore: user.totalScore || 0,
+        averageScore: user.averageScore || 0,
+        completedQuizzes: user.completedQuizzes || 0,
+        avatar: this.generateAvatar(displayName),
+        medal: this.getMedal(user.rank || (index + 1)),
+        podium: this.getPodiumClass(user.rank || (index + 1)),
+        currentUser: isCurrentUser
+      };
+    });
+  }
   /**
    * Génère un avatar par défaut basé sur le nom
    */

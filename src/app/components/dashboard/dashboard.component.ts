@@ -1,12 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { DashboardService, DashboardData, DashboardStats, RecentActivity, RecommendedQuiz, LearningPathStep, TopPerformer, Achievement, QuickAction } from '../../services/dashboard.service';
 import { AuthService } from '../../services/auth.service';
-import { QuizService } from '../../services/quiz.service';
-import { User } from '../../../models/user.model'; // ✅ car tu utilises badges, points
-import { Quiz } from '../../../models/quiz.model';
-import { DashboardService, UserStats } from '../../services/dashboard.service';
+import { Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -14,223 +13,351 @@ import { DashboardService, UserStats } from '../../services/dashboard.service';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit {
-  user: User | null = null;
-  availableQuizzes: Quiz[] = [];
-  quizzesThisWeek = 0;
-  scoreEvolution = 0;
-  rankingTrend = 'Stable'; // or '↑', '↓'
-  timeSpentThisWeek = 0;
-  stats: UserStats = {
-    
-    quizCompleted: 0,
-    averageScore: 0,
-    ranking: 0,
-    totalTime: ''
-  };
+export class DashboardComponent implements OnInit, OnDestroy {
+  // Données du dashboard
+  dashboardData: DashboardData | null = null;
+  user: any = null;
+  isLoading = true;
+
+  // Souscriptions
+  private dashboardSubscription: Subscription | null = null;
 
   constructor(
-    private authService: AuthService,
-    private quizService: QuizService,
     private dashboardService: DashboardService,
-    
-    
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
-      this.user = user;
-    });
-
-    this.quizService.getQuizzes().subscribe((quizzes: Quiz[]) => {
-      this.availableQuizzes = quizzes;
-    });
-    this.getUserStats();
+    console.log('Initialisation du Dashboard');
     
+    // Récupérer l'utilisateur connecté
+    this.user = this.authService.getCurrentUser();
+    
+    if (!this.user) {
+      console.error('Aucun utilisateur connecté');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Souscrire aux données du dashboard
+    this.subscribeToDashboard();
+    
+    // Charger les données initiales
+    this.loadDashboardData();
   }
-  getUserStats() {
-    this.dashboardService.getUserStats().subscribe({
+
+  ngOnDestroy(): void {
+    if (this.dashboardSubscription) {
+      this.dashboardSubscription.unsubscribe();
+    }
+  }
+
+  private subscribeToDashboard(): void {
+    this.dashboardSubscription = this.dashboardService.dashboardData$.subscribe({
       next: (data) => {
-        this.stats = data;
+        this.dashboardData = data;
+        this.isLoading = false;
+        console.log('Données dashboard reçues:', data);
       },
-      error: (err) => { 
-        console.error('Erreur récupération stats : ', err);
+      error: (error) => {
+        console.error('Erreur lors de la réception des données dashboard:', error);
+        this.isLoading = false;
       }
     });
   }
-  
 
-  calculateAverageScore(): number {
-    return Math.floor(Math.random() * 40) + 60;
+  private loadDashboardData(): void {
+    this.isLoading = true;
+    this.dashboardService.loadDashboardData().subscribe({
+      next: (data) => {
+        console.log('Dashboard chargé avec succès');
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement du dashboard:', error);
+        this.isLoading = false;
+      }
+    });
   }
 
-  getRecommendedQuizzes(): Quiz[] {
-    return this.availableQuizzes.slice(0, 3);
-  }
- 
-  
-recentActivities = [
-  {
-    type: 'success',
-    title: 'Quiz JavaScript terminé',
-    description: 'Bravo ! Vous avez obtenu 90% de réussite.',
-    time: 'il y a 2 heures'
-  },
-  {
-    type: 'info',
-    title: 'Nouveau badge débloqué',
-    description: '🏅 Expert en HTML',
-    time: 'il y a 1 jour'
-  },
-  {
-    type: 'warning',
-    title: 'Tentative de quiz annulée',
-    description: 'Vous avez quitté le quiz CSS avant la fin.',
-    time: 'il y a 3 jours'
-  }
-];
-
-  getThemeIcon(theme: string): string {
-    const icons = {
-      'technique': '💻',
-      'culture': '🏢',
-      'ludique': '🎉'
+  // Getters pour l'accès aux données dans le template
+  get stats(): DashboardStats {
+    return this.dashboardData?.stats || {
+      quizCompleted: 0,
+      averageScore: 0,
+      ranking: 0,
+      totalTime: '0min'
     };
-    return icons[theme as keyof typeof icons] || '📚';
   }
-  recommendedQuizzes = [
-    {
-      title: 'Quiz Angular',
-      description: 'Testez vos connaissances sur Angular.',
-      duration: 15,
-      questions: 10,
-      rating: 4.5,
-      progress: 0,
-      badge: 'new',
-      difficulty: 'intermediate',
-      status: 'Non démarré'
-    },
-    {
-      title: 'Quiz TypeScript',
-      description: 'Mettez vos compétences en TypeScript à l’épreuve.',
-      duration: 20,
-      questions: 12,
-      rating: 4.7,
-      progress: 50,
-      badge: 'trending',
-      difficulty: 'expert',
-      status: 'En cours'
-    },
-    {
-      title: 'Quiz HTML/CSS',
-      description: 'Parfait pour les débutants !',
-      duration: 10,
-      questions: 8,
-      rating: 4.2,
-      progress: 100,
-      badge: 'popular',
-      difficulty: 'beginner',
-      status: 'Terminé'
+
+  get recentActivities(): RecentActivity[] {
+    return this.dashboardData?.recentActivities || [];
+  }
+
+  get recommendedQuizzes(): RecommendedQuiz[] {
+    return this.dashboardData?.recommendedQuizzes || [];
+  }
+
+  get learningPath(): LearningPathStep[] {
+    return this.dashboardData?.learningPath || [];
+  }
+
+  get topPerformers(): TopPerformer[] {
+    return this.dashboardData?.topPerformers || [];
+  }
+
+  get achievements(): Achievement[] {
+    return this.dashboardData?.achievements || [];
+  }
+
+  get quickActions(): QuickAction[] {
+    return this.dashboardData?.quickActions || [];
+  }
+
+  get quizzesThisWeek(): number {
+    return this.dashboardData?.quizzesThisWeek || 0;
+  }
+
+  get scoreEvolution(): number {
+    return this.dashboardData?.scoreEvolution || 0;
+  }
+
+  get rankingTrend(): string {
+    return this.dashboardData?.rankingTrend || 'Nouveau';
+  }
+
+  get timeSpentThisWeek(): number {
+    return this.dashboardData?.timeSpentThisWeek || 0;
+  }
+
+  // Méthodes pour la navigation
+  navigateToQuiz(quizId: string): void {
+    this.router.navigate(['/quiz', quizId]);
+  }
+
+  navigateToQuizzes(): void {
+    this.router.navigate(['/quizzes']);
+  }
+
+  navigateToStats(): void {
+    this.router.navigate(['/stats']);
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(['/profile']);
+  }
+
+  navigateToLeaderboard(): void {
+    this.router.navigate(['/leaderboard']);
+  }
+
+  // Méthodes pour les actions du quiz
+  startQuiz(quiz: RecommendedQuiz): void {
+    this.router.navigate(['/quiz', quiz.id]);
+  }
+
+  continueQuiz(quiz: RecommendedQuiz): void {
+    this.router.navigate(['/quiz', quiz.id]);
+  }
+
+  retakeQuiz(quiz: RecommendedQuiz): void {
+    this.router.navigate(['/quiz', quiz.id]);
+  }
+
+  // Méthodes pour les actions rapides
+  executeQuickAction(action: QuickAction): void {
+    this.router.navigate([action.route]);
+  }
+
+  // Méthodes utilitaires pour l'affichage
+  getDifficultyClass(difficulty: string): string {
+    switch (difficulty) {
+      case 'beginner': return 'beginner';
+      case 'intermediate': return 'intermediate';
+      case 'expert': return 'expert';
+      default: return 'intermediate';
     }
-  ];
-    // Parcours d'apprentissage
-    learningPath = [
-      {
-        step: 1,
-        title: 'Introduction',
-        description: 'Commencez par les bases.',
-        status: 'completed',
-        statusText: 'Terminé'
+  }
+
+  getDifficultyText(difficulty: string): string {
+    switch (difficulty) {
+      case 'beginner': return 'Débutant';
+      case 'intermediate': return 'Intermédiaire';
+      case 'expert': return 'Expert';
+      default: return 'Intermédiaire';
+    }
+  }
+
+  getBadgeClass(badge: string): string {
+    switch (badge) {
+      case 'new': return 'new';
+      case 'trending': return 'trending';
+      case 'popular': return 'popular';
+      default: return 'popular';
+    }
+  }
+
+  getBadgeText(badge: string): string {
+    switch (badge) {
+      case 'new': return 'Nouveau';
+      case 'trending': return 'Tendance';
+      case 'popular': return 'Populaire';
+      default: return 'Populaire';
+    }
+  }
+
+  getQuizButtonText(quiz: RecommendedQuiz): string {
+    if (quiz.progress === 0) return 'Commencer';
+    if (quiz.progress === 100) return 'Refaire';
+    return 'Continuer';
+  }
+
+  getQuizButtonClass(quiz: RecommendedQuiz): string {
+    return quiz.progress === 0 ? 'btn-primary' : 'btn-secondary';
+  }
+
+  getStepStatusClass(step: LearningPathStep): string {
+    return step.status;
+  }
+
+  getPerformerClass(performer: TopPerformer): string {
+    let classes = '';
+    
+    if (performer.rank === '🥇') classes += 'gold ';
+    else if (performer.rank === '🥈') classes += 'silver ';
+    else if (performer.rank === '🥉') classes += 'bronze ';
+    
+    if (performer.current) classes += 'current';
+    
+    return classes.trim();
+  }
+
+  getAchievementClass(achievement: Achievement): string {
+    return achievement.earned ? 'earned' : 'locked';
+  }
+
+  // Méthodes pour le rafraîchissement
+  refreshDashboard(): void {
+    this.isLoading = true;
+    this.dashboardService.refreshDashboard().subscribe({
+      next: () => {
+        console.log('Dashboard rafraîchi avec succès');
       },
-      {
-        step: 2,
-        title: 'Fondamentaux',
-        description: 'Renforcez vos connaissances.',
-        status: 'in-progress',
-        statusText: 'En cours'
-      },
-      {
-        step: 3,
-        title: 'Projets Avancés',
-        description: 'Appliquez vos compétences.',
-        status: 'locked',
-        statusText: 'Verrouillé'
+      error: (error) => {
+        console.error('Erreur lors du rafraîchissement:', error);
+        this.isLoading = false;
       }
-    ];
-  
-    // Classement des meilleurs membres de l'équipe
-    topPerformers = [
-      {
-        rank: '🥇',
-        name: 'Amine El Majd',
-        avatar: 'assets/img/avatars/1.png',
-        points: '1250 pts',
-        current: true
-      },
-      {
-        rank: '🥈',
-        name: 'Lina Touhami',
-        avatar: 'assets/img/avatars/2.png',
-        points: '1170 pts',
-        current: false
-      },
-      {
-        rank: '🥉',
-        name: 'Karim Bennani',
-        avatar: 'assets/img/avatars/3.png',
-        points: '1100 pts',
-        current: false
-      }
-    ];
-  
-    // Accomplissements (badges)
-    achievements = [
-      {
-        icon: '🏆',
-        title: 'Premier Quiz',
-        description: 'Vous avez terminé votre premier quiz.',
-        earned: true,
-        date: '15 Juillet 2025'
-      },
-      {
-        icon: '📚',
-        title: '5 Quiz Complétés',
-        description: 'Continuez comme ça !',
-        earned: false,
-        progress: '3/5'
-      },
-      {
-        icon: '🔥',
-        title: 'Connexion Quotidienne',
-        description: '3 jours d’affilée !',
-        earned: true,
-        date: '14 Juillet 2025'
-      }
-    ];
-  
-    // Actions rapides
-    quickActions = [
-      {
-        icon: 'brain',
-        title: 'Nouveau Quiz',
-        description: 'Testez vos nouvelles compétences.'
-      },
-      {
-        icon: 'chart',
-        title: 'Statistiques',
-        description: 'Analysez votre progression.'
-      },
-      {
-        icon: 'user',
-        title: 'Profil',
-        description: 'Gérez votre compte.'
-      },
-      {
-        icon: 'settings',
-        title: 'Paramètres',
-        description: 'Personnalisez votre expérience.'
-      }
-    ];
-  
-  
+    });
+  }
+
+  // Méthodes pour les informations utilisateur
+  get username(): string {
+    return this.user?.username || 'Invité';
+  }
+
+  get userBadges(): any[] {
+    return this.user?.badges || [];
+  }
+
+  // Méthodes pour les statistiques d'évolution
+  getScoreEvolutionClass(): string {
+    if (this.scoreEvolution > 0) return 'positive';
+    if (this.scoreEvolution < 0) return 'negative';
+    return 'neutral';
+  }
+
+  getScoreEvolutionText(): string {
+    if (this.scoreEvolution > 0) return `+${this.scoreEvolution}%`;
+    if (this.scoreEvolution < 0) return `${this.scoreEvolution}%`;
+    return '0%';
+  }
+
+  // Méthodes pour les badges et récompenses
+  hasBadges(): boolean {
+    return this.userBadges.length > 0;
+  }
+
+  getEarnedAchievements(): Achievement[] {
+    return this.achievements.filter(a => a.earned);
+  }
+
+  getLockedAchievements(): Achievement[] {
+    return this.achievements.filter(a => !a.earned);
+  }
+
+  // Méthodes pour la gestion des erreurs et états
+  get hasError(): boolean {
+    return !this.isLoading && !this.dashboardData;
+  }
+
+  get isEmpty(): boolean {
+    if (this.isLoading || !this.dashboardData) return false;
+    return this.stats.quizCompleted === 0 && this.recommendedQuizzes.length === 0;
+  }
+
+  get hasRecommendations(): boolean {
+    return this.recommendedQuizzes.length > 0;
+  }
+
+  get hasActivities(): boolean {
+    return this.recentActivities.length > 0;
+  }
+
+  get hasAchievements(): boolean {
+    return this.achievements.length > 0;
+  }
+
+  get hasLearningPath(): boolean {
+    return this.learningPath.length > 0;
+  }
+
+  // Méthodes pour les messages d'encouragement
+  getMotivationalMessage(): string {
+    const completedQuizzes = this.stats.quizCompleted;
+    const averageScore = this.stats.averageScore;
+
+    if (completedQuizzes === 0) {
+      return "🚀 Prêt à commencer votre parcours d'apprentissage ?";
+    } else if (completedQuizzes < 5) {
+      return "🎯 Bon début ! Continuez sur cette lancée !";
+    } else if (averageScore >= 80) {
+      return "🌟 Excellent travail ! Vos performances sont remarquables !";
+    } else if (averageScore >= 60) {
+      return "💪 Bonne progression ! Continuez vos efforts !";
+    } else {
+      return "📚 Chaque quiz vous fait progresser, persévérez !";
+    }
+  }
+
+  // Méthodes pour les actions contextuelles
+  onQuizAction(quiz: RecommendedQuiz): void {
+    if (quiz.progress === 0) {
+      this.startQuiz(quiz);
+    } else if (quiz.progress === 100) {
+      this.retakeQuiz(quiz);
+    } else {
+      this.continueQuiz(quiz);
+    }
+  }
+
+  onViewFullLeaderboard(): void {
+    this.navigateToLeaderboard();
+  }
+
+  onViewStats(): void {
+    this.navigateToStats();
+  }
+
+  onStartQuiz(): void {
+    this.navigateToQuizzes();
+  }
+
+  // Méthodes de debug (à supprimer en production)
+  logDashboardData(): void {
+    console.log('Dashboard Data:', this.dashboardData);
+  }
+
+  logUserInfo(): void {
+    console.log('User Info:', this.user);
+  }
 }

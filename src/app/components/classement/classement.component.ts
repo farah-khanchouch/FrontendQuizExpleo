@@ -91,9 +91,7 @@ export class ClassementComponent implements OnInit, OnDestroy {
   /**
    * Retourne le nom d'affichage avec indication si c'est l'utilisateur actuel
    */
-  getDisplayName(user: LeaderboardUser): string {
-    return user.currentUser ? `${user.userName} (Vous)` : user.userName;
-  }
+ 
 
   /**
    * Retourne les informations de rang pour l'utilisateur actuel
