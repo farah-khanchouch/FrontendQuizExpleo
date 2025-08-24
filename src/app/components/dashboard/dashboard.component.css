@@ -1,15 +1,23 @@
+/* Style de base du dashboard */
 .dashboard {
   min-height: 100vh;
-  background: #6846c5
-
-  ;
+  background: #6846c5;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 .dashboard-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 30px 20px;
+  padding: 30px 20px 0;
 }
+
+.dashboard>*:last-child {
+  margin-bottom: 0;
+  padding-bottom: 30px;
+}
+
 /* Welcome section */
 .hero-section {
   margin-bottom: 48px;
@@ -71,7 +79,7 @@
 }
 
 .floating-shapes {
-  position:absolute;
+  position: absolute;
   margin-bottom: 40px;
 }
 
@@ -135,17 +143,22 @@
   .hero-content {
     flex-direction: column;
     text-align: center;
-    align-items: flex-start; /* ✅ aligne tout à gauche */
-    padding: 0 20px; /* ✅ un peu d'espace sur les côtés */
+    align-items: flex-start;
+    /* aligne tout à gauche */
+    padding: 0 20px;
+    /* un peu d'espace sur les côtés */
   }
 
   .hero-content img {
-    margin: 0 0 24px 0; /* ✅ supprime le centrage horizontal */
-    align-self: flex-start; /* ✅ force l’image à rester à gauche */
+    margin: 0 0 24px 0;
+    /* supprime le centrage horizontal */
+    align-self: flex-start;
+    /* force l’image à rester à gauche */
   }
 
   .hero-text {
-    text-align: left; /* ✅ remet le texte à gauche aussi si tu veux */
+    text-align: left;
+    /* remet le texte à gauche aussi si tu veux */
     margin-top: 0;
   }
 }
@@ -381,6 +394,7 @@
   background: linear-gradient(90deg, #3B82F6, #1D4ED8);
   transition: width 0.5s ease;
 }
+
 /* === Recent Activity Section === */
 .recent-activity {
   margin-bottom: 48px;
@@ -587,6 +601,7 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 15px rgba(59, 130, 246, 0.3);
 }
+
 /* === Recommended Quizzes Section === */
 .recommended-section {
   margin-bottom: 48px;
@@ -746,6 +761,7 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
+
 /* Learning Path */
 .learning-path {
   margin-bottom: 48px;
@@ -860,9 +876,9 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   min-width: 150px;
@@ -870,7 +886,7 @@
 
 .leader-item:hover {
   transform: translateY(-4px);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .leader-item.current {
@@ -1106,6 +1122,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1116,9 +1133,11 @@
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
+
   100% {
     transform: scale(1);
   }
@@ -1136,58 +1155,59 @@
   .hero-text h1 {
     font-size: 36px;
   }
-  
+
   .hero-subtitle {
     font-size: 20px;
   }
-  
+
   .hero-description {
     font-size: 16px;
   }
-  
+
   .hero-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .hero-btn {
     width: 100%;
     max-width: 300px;
   }
-  
+
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .quiz-recommendations {
     grid-template-columns: 1fr;
   }
-  
+
   .path-container {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .path-connector {
     width: 3px;
     height: 40px;
     margin: 0;
     margin-top: 0;
   }
-  
+
   .mini-leaderboard {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .achievements-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
-  
+
   .actions-grid {
     grid-template-columns: 1fr;
   }
 }
+
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 20px 15px;

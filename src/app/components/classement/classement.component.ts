@@ -24,7 +24,7 @@ export class ClassementComponent implements OnInit, OnDestroy {
   constructor(
     private leaderboardService: LeaderboardService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadLeaderboard();
@@ -46,7 +46,7 @@ export class ClassementComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.leaderboard = data;
         this.loading = false;
-        
+
         if (data.length === 0) {
           this.error = 'Aucune donnée de classement disponible pour le moment.';
         }
@@ -91,7 +91,7 @@ export class ClassementComponent implements OnInit, OnDestroy {
   /**
    * Retourne le nom d'affichage avec indication si c'est l'utilisateur actuel
    */
- 
+
 
   /**
    * Retourne les informations de rang pour l'utilisateur actuel
@@ -117,7 +117,7 @@ export class ClassementComponent implements OnInit, OnDestroy {
    * Formate le score pour l'affichage
    */
   formatScore(score: number): string {
-    return score.toFixed(2) + ' pts (moy)';
+    return score.toFixed(2) + ' pts ';
   }
   getScoreInfo(user: LeaderboardUser): string {
     return `${user.averageScore.toFixed(2)} pts (${user.completedQuizzes} quiz)`;

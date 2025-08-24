@@ -22,17 +22,17 @@ export class QuizListComponent implements OnInit {
   editingQuiz: Quiz | null = null;
   showEditModal = false;
   userQuizzes: Quiz[] = [];
-  constructor(private quizService: QuizService, private router: Router, public authService: AuthService) {}
+  constructor(private quizService: QuizService, private router: Router, public authService: AuthService) { }
   ngOnInit() {
     console.log('INIT QUIZ LIST COMPONENT'); // tout en haut
-  
+
     const user = this.authService.getCurrentUser();
     console.log('USER:', user);
-  
+
     this.quizService.getQuizzes().subscribe({
       next: (quizzes) => {
         console.log('QUIZZES:', quizzes);
-  
+
         if (user && user.cbu) {
           const filtered = quizzes.filter(q =>
             q.status === 'active' &&
@@ -50,7 +50,7 @@ export class QuizListComponent implements OnInit {
         console.error('ERROR GETTING QUIZZES:', err);
       }
     });
-  
+
     console.log('END OF ngOnInit'); // tout en bas
   }
   getQuizQuestionsCount(quiz: Quiz): number {
@@ -70,8 +70,8 @@ export class QuizListComponent implements OnInit {
       }
     });
   }
- 
-  
+
+
   filterByTheme(theme: string): void {
     this.selectedTheme = theme;
     if (theme === '') {
@@ -87,7 +87,7 @@ export class QuizListComponent implements OnInit {
   navigateToQuiz(quizId: string): void {
     this.router.navigate(['/quiz', quizId]);
   }
- 
 
- 
+
+
 }

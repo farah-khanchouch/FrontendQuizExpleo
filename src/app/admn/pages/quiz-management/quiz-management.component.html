@@ -84,7 +84,7 @@
           <div class="stat">
             <div class="stat-icon"></div>
             <div class="stat-content">
-              <span class="stat-value">{{ quiz.questionCount || 0 }}</span>              <span class="stat-label">Questions</span>
+              <span class="stat-value">{{ quiz.questionCount || 0 }}</span> <span class="stat-label">Questions</span>
             </div>
           </div>
 
@@ -181,7 +181,7 @@
   <div class="modal-content enhanced-modal" (click)="$event.stopPropagation()">
     <!-- En-tête du modal -->
     <div class="modal-header">
-      
+
     </div>
 
     <!-- Contenu du modal -->
@@ -253,7 +253,7 @@
         <div class="form-group">
           <label>CBUs concernés :</label>
           <div class="cbus-checkbox-list">
-            
+
             <div class="cbus-list">
               <label *ngFor="let cbu of cbusList" class="cbu-checkbox">
                 <input type="checkbox" [checked]="selectedCBUs.includes(cbu)"
@@ -266,23 +266,25 @@
         <!-- Section Apparence -->
         <div class="form-group">
           <label for="quizImage">Image du quiz :</label>
-          <input type="file" id="quizImage" (change)="onQuizImageSelected($event)" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />          <div *ngIf="quizImageUrl">
-            <img [src]="quizImageUrl" alt="Aperçu" style="max-width: 120px; margin-top: 8px;" />
-          </div>        
+          <input type="file" id="quizImage" (change)="onQuizImageSelected($event)"
+            accept=".jpg,.jpeg,.png,image/jpeg,image/png" />
           <div *ngIf="quizImageUrl">
-            
-        </div>
+            <img [src]="quizImageUrl" alt="Aperçu" style="max-width: 120px; margin-top: 8px;" />
+          </div>
+          <div *ngIf="quizImageUrl">
+
+          </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Badge</label>
+              <label class="form-label"></label>
               <input type="text" class="form-input" [ngModel]="editingQuiz ? editingQuiz.badge : newQuiz.badge"
                 (ngModelChange)="editingQuiz ? (editingQuiz.badge = $event) : (newQuiz.badge = $event)" name="badge"
                 placeholder="Expert JavaScript">
             </div>
 
             <div class="form-group">
-              <label class="form-label">Classe CSS du badge</label>
+              <label class="form-label"></label>
               <input type="text" class="form-input"
                 [ngModel]="editingQuiz ? editingQuiz.badgeClass : newQuiz.badgeClass"
                 (ngModelChange)="editingQuiz ? (editingQuiz.badgeClass = $event) : (newQuiz.badgeClass = $event)"

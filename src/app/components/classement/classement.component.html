@@ -4,7 +4,7 @@
   <div class="page-header">
     <h2>Classement</h2>
     <p>Découvrez votre position parmi vos collègues</p>
-    
+
     <!-- Affichage du rang de l'utilisateur actuel -->
     <div *ngIf="getCurrentUserRankInfo()" class="user-rank-info">
       <i class="icon-trophy"></i>
@@ -48,18 +48,14 @@
 
     <!-- Liste du classement -->
     <div *ngIf="leaderboard.length > 0" class="leaderboard-list">
-      <div 
-        class="leaderboard-item"
-        [ngClass]="{
+      <div class="leaderboard-item" [ngClass]="{
           'podium': item.podium, 
           'first': item.podium === 'first', 
           'second': item.podium === 'second', 
           'third': item.podium === 'third', 
           'current-user': item.currentUser
-        }"
-        *ngFor="let item of leaderboard; let i = index"
-        [style.animation-delay]="(i * 100) + 'ms'">
-        
+        }" *ngFor="let item of leaderboard; let i = index" [style.animation-delay]="(i * 100) + 'ms'">
+
         <div class="rank">
           <!-- Médaille pour les positions du podium -->
           <div *ngIf="item.medal" class="medal" [title]="'Position ' + item.rank">
@@ -76,14 +72,14 @@
             <span class="user-cbu" *ngIf="item.userCbu">{{ item.userCbu }}</span>
             <div class="user-stats">
               <span class="quiz-count">{{ item.completedQuizzes }} quiz{{ item.completedQuizzes > 1 ? 's' : '' }}</span>
-              <span class="average-score">Moy: {{ item.averageScore }}pts</span>
+              <span class="average-score"></span>
             </div>
           </div>
         </div>
 
         <div class="score-info">
           <div class="total-score">{{ formatScore(item.averageScore) }}</div>
-          <div class="score-label">Total</div>
+          <div class="score-label"></div>
         </div>
 
         <!-- Indicateur utilisateur actuel -->
@@ -96,12 +92,12 @@
     <!-- Statistiques supplémentaires -->
     <div *ngIf="leaderboard.length > 0" class="leaderboard-stats">
       <div class="stat-item">
-        <span class="stat-label">Participants actifs:</span>
+        <span class="stat-label">Participants actifs :</span>
         <span class="stat-value">{{ userRank?.totalUsers || leaderboard.length }}</span>
       </div>
       <div class="stat-item" *ngIf="leaderboard[0]">
-        <span class="stat-label">Meilleur score:</span>
-        <span class="stat-value">{{ formatScore(leaderboard[0].totalScore) }}</span>
+        <span class="stat-label">Meilleur score :</span>
+        <span class="stat-value">{{ leaderboard[0].averageScore | number:'1.2-2' }} pts (moy)</span>
       </div>
     </div>
   </div>

@@ -1,7 +1,7 @@
 /* Page containers */
 .page-container {
-    min-height: 100vh;
-    background: #6846c5;
+  min-height: 100vh;
+  background: #6846c5;
 }
 
 .page-header {
@@ -25,7 +25,8 @@
 
 .quiz-grid {
   display: grid;
-  grid-template-columns: 1fr; /* une seule colonne */
+  grid-template-columns: 1fr;
+  /* une seule colonne */
   gap: 24px;
 }
 
@@ -158,6 +159,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -169,7 +171,7 @@
   .quiz-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .page-header h2 {
     font-size: 28px;
   }

@@ -4,6 +4,7 @@ import { map, catchError } from 'rxjs/operators';
 import { QuizService } from './quiz.service';
 import { StatsService } from './stats.service';
 import { AuthService } from './auth.service';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Quiz } from '../../models/quiz.model';
 
 export interface DashboardStats {
@@ -83,13 +84,15 @@ export interface DashboardData {
   providedIn: 'root'
 })
 export class DashboardService {
+  private apiUrl = 'http://localhost:3000/api';
   private dashboardDataSubject = new BehaviorSubject<DashboardData | null>(null);
   public dashboardData$ = this.dashboardDataSubject.asObservable();
 
   constructor(
     private quizService: QuizService,
     private statsService: StatsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) { }
 
   loadDashboardData(): Observable<DashboardData> {
@@ -295,30 +298,36 @@ export class DashboardService {
   }
 
   private getTopPerformers(): Observable<TopPerformer[]> {
-    // Simulation de données pour le classement
-    return of([
-      {
-        rank: '🥇',
-        name: 'Alice Martin',
-        points: '1,250 pts',
-        avatar: '/assets/avatars/alice.jpg',
-        current: false
-      },
-      {
-        rank: '🥈',
-        name: 'Bob Dupont',
-        points: '1,180 pts',
-        avatar: '/assets/avatars/bob.jpg',
-        current: false
-      },
-      {
-        rank: '🥉',
-        name: 'Vous',
-        points: '950 pts',
-        avatar: '/assets/avatars/default.jpg',
-        current: true
-      }
-    ]);
+    const user = this.authService.getCurrentUser();
+    if (!user || !user.cbu) {
+      console.log('No user or CBU found');
+      return of([]);
+    }
+
+    return this.http.get<TopPerformer[]>(
+      `${this.apiUrl}/dashboard/top-performers`,
+      { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+    ).pipe(
+      map(performers => {
+        return performers.map(performer => {
+          // S'assurer que le chemin de l'avatar est correct
+          let avatarPath = performer.avatar;
+          if (avatarPath && !avatarPath.includes('assets/')) {
+            avatarPath = `assets/avatars/${avatarPath}`;
+          }
+
+          return {
+            ...performer,
+            avatar: avatarPath,
+            current: performer.name === user.username
+          };
+        });
+      }),
+      catchError(error => {
+        console.error('Erreur lors de la récupération des top performers:', error);
+        return of([]);
+      })
+    );
   }
 
   // Méthodes utilitaires
@@ -463,5 +472,5 @@ export class DashboardService {
   refreshDashboard(): Observable<DashboardData> {
     return this.loadDashboardData();
   }
-  
+
 }

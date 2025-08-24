@@ -4,7 +4,7 @@
     <h2>Mes Quiz</h2>
     <p>Explorez et participez aux quiz disponibles</p>
   </div>
-  
+
   <div class="quiz-card" *ngFor="let quiz of userQuizzes">
     <div class="quiz-header">
       <h3>{{ quiz.title }}</h3>
@@ -14,11 +14,12 @@
     <div class="quiz-info">
       <span><strong>Thème :</strong> {{ quiz.theme }}</span>
       <span><strong>Durée :</strong> {{ quiz.duration }} min</span>
-      <span><strong>Questions :</strong> {{ getQuizQuestionsCount(quiz) }}</span>    </div>
-      <img *ngIf="quiz.imageUrl" [src]="'http://localhost:3000' + quiz.imageUrl" alt="Quiz image" style="width:120px;"/>
-      <button class="btn" [ngClass]="quiz.progressStatus === 'completed' ? 'btn-secondary' : 'btn-primary'" (click)="navigateToQuiz(quiz.id)">
-        {{ quiz.progressStatus === 'completed' ? 'Refaire' : 'Commencer' }}
-      </button>
+    </div>
+    <img *ngIf="quiz.imageUrl" [src]="'http://localhost:3000' + quiz.imageUrl" alt="Quiz image" style="width:120px;" />
+    <button class="btn" [ngClass]="quiz.progressStatus === 'completed' ? 'btn-secondary' : 'btn-primary'"
+      (click)="navigateToQuiz(quiz.id)">
+      {{ quiz.progressStatus === 'completed' ? 'Refaire' : 'Commencer' }}
+    </button>
   </div>
 
-  </div>
+</div>

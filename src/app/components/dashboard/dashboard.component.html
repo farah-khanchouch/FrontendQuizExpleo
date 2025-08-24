@@ -95,7 +95,7 @@
         </div>
         <h3>Temps Total</h3>
         <span class="stat-number">{{ stats.totalTime }}</span>
-        <span class="stat-change positive">+{{ timeSpentThisWeek }}min cette semaine</span>
+        <span class="stat-change positive">+{{ timeSpentThisWeek | number:'1.2-2' }} min cette semaine</span>
       </div>
     </div>
   </div>
@@ -252,23 +252,53 @@
     </div>
   </div>
 
-  <!-- Team Leaderboard Preview -->
+  <!-- Amélioration de la section Team Leaderboard Preview -->
   <div class="team-preview">
-    <h2 class="section-title">Top Performers de l'Équipe</h2>
-    <div class="mini-leaderboard">
+    <h2 class="section-title">
+      Top Performers de votre CBU
+      <span class="cbu-badge" *ngIf="user?.cbu">{{ user.cbu }}</span>
+    </h2>
+
+    <!-- Affichage conditionnel basé sur les données -->
+    <div class="mini-leaderboard" *ngIf="topPerformers && topPerformers.length > 0; else noPerformers">
       <div class="leader-item"
         [ngClass]="performer.rank === '🥇' ? 'gold' : performer.rank === '🥈' ? 'silver' : 'bronze'"
-        [class.current]="performer.current" *ngFor="let performer of topPerformers">
-        <div class="leader-rank">{{performer.rank}}</div>
-        <img [src]="performer.avatar" [alt]="performer.name" />
+        [class.current]="performer.current" *ngFor="let performer of topPerformers; let i = index">
+
+        <div class="leader-rank">{{ performer.rank }}</div>
+        <img [src]="performer.avatar" [alt]="performer.name" (error)="performer.avatar = 'assets/avatars/av1.jpg'"
+          onerror="this.onerror=null; this.src='assets/avatars/av1.jpg'" />
         <div class="leader-info">
-          <h4>{{performer.name}}</h4>
-          <span>{{performer.points}}</span>
+          <h4>
+            {{ performer.name }}
+            <span class="you-badge" *ngIf="performer.current">(Vous)</span>
+          </h4>
+          <span class="performer-score">{{ formatScore(performer.points) }}</span>
+
         </div>
       </div>
     </div>
-    <button class="btn btn-secondary view-full-btn">
-      <!-- Trophy icon -->
+
+    <!-- Template pour aucun performer -->
+    <ng-template #noPerformers>
+      <div class="no-performers-message">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+            <path d="M4 22h16" />
+            <path d="M10 14.66V17c0 .55.47.98.97 1.21C12.04 18.75 13 20.24 13 22" />
+            <path d="M14 14.66V17c0 .55-.47.98-.97 1.21C11.96 18.75 11 20.24 11 22" />
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+          </svg>
+          <p>Aucun classement disponible pour votre CBU</p>
+          <small>Terminez quelques quiz pour voir apparaître le classement !</small>
+        </div>
+      </div>
+    </ng-template>
+
+    <button class="btn btn-secondary view-full-btn" (click)="onViewFullLeaderboard()"
+      *ngIf="topPerformers && topPerformers.length > 0">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
         <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
@@ -277,7 +307,7 @@
         <path d="M14 14.66V17c0 .55-.47.98-.97 1.21C11.96 18.75 11 20.24 11 22" />
         <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
       </svg>
-      Voir le Classement Complet
+      Voir le Classement Complet de votre CBU
     </button>
   </div>
 

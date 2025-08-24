@@ -26,14 +26,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private dashboardService: DashboardService,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     console.log('Initialisation du Dashboard');
-    
+
     // Récupérer l'utilisateur connecté
     this.user = this.authService.getCurrentUser();
-    
+
     if (!this.user) {
       console.error('Aucun utilisateur connecté');
       this.router.navigate(['/login']);
@@ -42,7 +42,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Souscrire aux données du dashboard
     this.subscribeToDashboard();
-    
+
     // Charger les données initiales
     this.loadDashboardData();
   }
@@ -151,6 +151,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/leaderboard']);
   }
 
+  // Navigation vers le classement complet
+  onViewFullLeaderboard(): void {
+    this.router.navigate(['/classement']);
+  }
+
   // Méthodes pour les actions du quiz
   startQuiz(quiz: RecommendedQuiz): void {
     this.router.navigate(['/quiz', quiz.id]);
@@ -222,18 +227,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getPerformerClass(performer: TopPerformer): string {
     let classes = '';
-    
+
     if (performer.rank === '🥇') classes += 'gold ';
     else if (performer.rank === '🥈') classes += 'silver ';
     else if (performer.rank === '🥉') classes += 'bronze ';
-    
+
     if (performer.current) classes += 'current';
-    
+
     return classes.trim();
   }
 
   getAchievementClass(achievement: Achievement): string {
     return achievement.earned ? 'earned' : 'locked';
+  }
+
+  formatScore(score: string): string {
+    // Supprimer le symbole % s'il existe et ajouter 'pts'
+    return score.replace('%', '') + ' pts';
   }
 
   // Méthodes pour le rafraîchissement
@@ -338,10 +348,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       this.continueQuiz(quiz);
     }
-  }
-
-  onViewFullLeaderboard(): void {
-    this.navigateToLeaderboard();
   }
 
   onViewStats(): void {

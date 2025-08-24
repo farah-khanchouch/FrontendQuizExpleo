@@ -8,13 +8,13 @@ import { of } from 'rxjs';
   providedIn: 'root'
 })
 export class QuizService {
-  
+
   private baseUrl = 'http://localhost:3000/api/quizzes';
   private questionsUrl = 'http://localhost:3000/api/questions';
 
   // BehaviorSubjects pour la gestion d'état en temps réel
   private quizzesSubject = new BehaviorSubject<Quiz[]>([]);
-  private questionsSubject = new BehaviorSubject<{[quizId: string]: Question[]}>({});
+  private questionsSubject = new BehaviorSubject<{ [quizId: string]: Question[] }>({});
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
 
@@ -96,7 +96,7 @@ export class QuizService {
   private addQuizToState(quiz: Quiz): void {
     const currentQuizzes = this.quizzesSubject.value;
     const existingIndex = currentQuizzes.findIndex(q => (q.id || q._id) === (quiz.id || quiz._id));
-    
+
     if (existingIndex === -1) {
       this.quizzesSubject.next([...currentQuizzes, quiz]);
     } else {
@@ -117,7 +117,7 @@ export class QuizService {
 
   private removeQuizFromState(quizId: string): void {
     const currentQuizzes = this.quizzesSubject.value;
-    const filteredQuizzes = currentQuizzes.filter(quiz => 
+    const filteredQuizzes = currentQuizzes.filter(quiz =>
       (quiz.id || quiz._id) !== quizId
     );
     this.quizzesSubject.next(filteredQuizzes);
@@ -126,12 +126,12 @@ export class QuizService {
   private updateQuestionsState(quizId: string, questions: Question[]): void {
     const currentQuestions = this.questionsSubject.value;
     currentQuestions[quizId] = questions;
-    this.questionsSubject.next({...currentQuestions});
+    this.questionsSubject.next({ ...currentQuestions });
   }
 
   private handleError = (error: HttpErrorResponse) => {
     let errorMessage = 'Une erreur est survenue';
-    
+
     if (error.error instanceof ErrorEvent) {
       errorMessage = `Erreur réseau: ${error.error.message}`;
     } else {
@@ -155,7 +155,7 @@ export class QuizService {
           errorMessage = `Erreur ${error.status}: ${error.message}`;
       }
     }
-    
+
     console.error('Erreur détaillée:', error);
     this.setError(errorMessage);
     this.setLoading(false);
@@ -168,10 +168,10 @@ export class QuizService {
     if (!forceRefresh && this.quizzesSubject.value.length > 0) {
       return this.quizzes$;
     }
-  
+
     this.setLoading(true);
     this.setError(null);
-  
+
     return this.http.get<any[]>(this.baseUrl, { headers: this.getAuthHeaders() }).pipe(
       map((quizzes: any[]) =>
         quizzes.map(quiz => this.transformQuizFromAPI(quiz))
@@ -201,7 +201,7 @@ export class QuizService {
   }
   getQuizById(id: string): Observable<Quiz> {
     this.setLoading(true);
-    
+
     return this.http.get<any>(`${this.baseUrl}/${id}`, { headers: this.getAuthHeaders() }).pipe(
       map(quiz => this.transformQuizFromAPI(quiz)),
       tap(quiz => {
@@ -216,7 +216,7 @@ export class QuizService {
   createQuiz(quizData: Partial<Quiz>): Observable<Quiz> {
     this.setLoading(true);
     this.setError(null);
-    
+
     const headers = this.getAuthHeaders();
     const preparedData = {
       title: quizData.title?.trim(),
@@ -249,7 +249,7 @@ export class QuizService {
   updateQuiz(id: string, quizData: Partial<Quiz>): Observable<Quiz> {
     this.setLoading(true);
     this.setError(null);
-    
+
     const headers = this.getAuthHeaders();
     const updateData = {
       title: quizData.title?.trim(),
@@ -279,16 +279,16 @@ export class QuizService {
   deleteQuiz(id: string): Observable<{ message: string }> {
     this.setLoading(true);
     this.setError(null);
-    
+
     const headers = this.getAuthHeaders();
-    
+
     return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`, { headers }).pipe(
       tap(() => {
         this.removeQuizFromState(id);
         // Supprimer aussi les questions de ce quiz de l'état
         const currentQuestions = this.questionsSubject.value;
         delete currentQuestions[id];
-        this.questionsSubject.next({...currentQuestions});
+        this.questionsSubject.next({ ...currentQuestions });
         this.setLoading(false);
         console.log('Quiz supprimé de l\'état:', id);
       }),
@@ -298,7 +298,7 @@ export class QuizService {
 
   duplicateQuiz(originalQuiz: Quiz): Observable<Quiz> {
     const originalId = originalQuiz.id || originalQuiz._id;
-    
+
     const duplicateData: Partial<Quiz> = {
       title: `${originalQuiz.title} `,
       description: originalQuiz.description,
@@ -313,7 +313,7 @@ export class QuizService {
       cbus: originalQuiz.cbus || [],
       averageScore: 0
     };
-  
+
     return this.createQuiz(duplicateData).pipe(
       switchMap(newQuiz => {
         const newQuizId = newQuiz.id || newQuiz._id;
@@ -330,15 +330,15 @@ export class QuizService {
 
   getQuestionsByQuiz(quizId: string, forceRefresh: boolean = false): Observable<Question[]> {
     const currentQuestions = this.questionsSubject.value[quizId];
-    
+
     if (!forceRefresh && currentQuestions) {
       return new BehaviorSubject(currentQuestions).asObservable();
     }
 
-    return this.http.get<any[]>(`${this.baseUrl}/${quizId}/questions`, { 
-      headers: this.getAuthHeaders() 
+    return this.http.get<any[]>(`${this.baseUrl}/${quizId}/questions`, {
+      headers: this.getAuthHeaders()
     }).pipe(
-      map((questions: any[]) => 
+      map((questions: any[]) =>
         questions.map(question => this.transformQuestionFromAPI(question))
       ),
       tap(questions => {
@@ -353,7 +353,7 @@ export class QuizService {
   private updateQuizQuestionCount(quizId: string, count: number): void {
     const currentQuizzes = this.quizzesSubject.value;
     const quizIndex = currentQuizzes.findIndex(q => (q.id || q._id) === quizId);
-    
+
     if (quizIndex !== -1) {
       currentQuizzes[quizIndex].questions = count as any;
       this.quizzesSubject.next([...currentQuizzes]);
@@ -362,7 +362,7 @@ export class QuizService {
 
   createQuestion(quizId: string, questionData: Question): Observable<Question> {
     this.setLoading(true);
-    
+
     const headers = this.getAuthHeaders();
     const preparedQuestion = {
       question: questionData.question.trim(),
@@ -373,7 +373,7 @@ export class QuizService {
       points: questionData.points || 10,
       quizId: quizId
     };
-    
+
     return this.http.post<any>(`${this.baseUrl}/${quizId}/questions`, preparedQuestion, { headers }).pipe(
       map(response => this.transformQuestionFromAPI(response)),
       tap(newQuestion => {
@@ -381,8 +381,8 @@ export class QuizService {
         const currentQuestions = this.questionsSubject.value;
         const quizQuestions = currentQuestions[quizId] || [];
         currentQuestions[quizId] = [...quizQuestions, newQuestion];
-        this.questionsSubject.next({...currentQuestions});
-        
+        this.questionsSubject.next({ ...currentQuestions });
+
         // Mettre à jour le nombre de questions dans le quiz
         this.updateQuizQuestionCount(quizId, currentQuestions[quizId].length);
         this.setLoading(false);
@@ -393,7 +393,7 @@ export class QuizService {
 
   updateQuestion(questionId: string, questionData: Question): Observable<Question> {
     this.setLoading(true);
-    
+
     const headers = this.getAuthHeaders();
     const preparedQuestion = {
       question: questionData.question.trim(),
@@ -403,7 +403,7 @@ export class QuizService {
       explanation: questionData.explanation?.trim(),
       points: questionData.points || 10
     };
-    
+
     return this.http.put<any>(`${this.questionsUrl}/${questionId}`, preparedQuestion, { headers }).pipe(
       map(response => this.transformQuestionFromAPI(response)),
       tap(updatedQuestion => {
@@ -414,7 +414,7 @@ export class QuizService {
           const questionIndex = questions.findIndex(q => (q.id || (q as any)._id) === questionId);
           if (questionIndex !== -1) {
             questions[questionIndex] = updatedQuestion;
-            this.questionsSubject.next({...currentQuestions});
+            this.questionsSubject.next({ ...currentQuestions });
             break;
           }
         }
@@ -426,25 +426,25 @@ export class QuizService {
 
   deleteQuestion(questionId: string): Observable<{ message: string }> {
     this.setLoading(true);
-    
+
     const headers = this.getAuthHeaders();
     return this.http.delete<{ message: string }>(`${this.questionsUrl}/${questionId}`, { headers }).pipe(
       tap(() => {
         // Supprimer la question de l'état
         const currentQuestions = this.questionsSubject.value;
         let quizId = '';
-        
+
         for (const qId in currentQuestions) {
           const questions = currentQuestions[qId];
           const questionIndex = questions.findIndex(q => (q.id || (q as any)._id) === questionId);
           if (questionIndex !== -1) {
             questions.splice(questionIndex, 1);
             quizId = qId;
-            this.questionsSubject.next({...currentQuestions});
+            this.questionsSubject.next({ ...currentQuestions });
             break;
           }
         }
-        
+
         // Mettre à jour le nombre de questions dans le quiz
         if (quizId) {
           this.updateQuizQuestionCount(quizId, currentQuestions[quizId].length);
@@ -481,10 +481,10 @@ export class QuizService {
 
   submitQuizResult(quizId: string, answers: { [questionId: string]: string | number }): Observable<QuizResult> {
     this.setLoading(true);
-    
+
     const headers = this.getAuthHeaders();
     const body = { quizId, answers };
-    
+
     return this.http.post<QuizResult>(`${this.baseUrl}/${quizId}/submit`, body, { headers }).pipe(
       tap(result => {
         // Mettre à jour les statistiques du quiz
@@ -498,7 +498,7 @@ export class QuizService {
   finishQuiz(quizId: string, score: number, timeSpent: number): Observable<any> {
     const headers = this.getAuthHeaders();
     const body = { score, timeSpent };
-    
+
     return this.http.post(`${this.baseUrl}/${quizId}/finish`, body, { headers }).pipe(
       tap(() => {
         // Mettre à jour le statut utilisateur du quiz
@@ -522,16 +522,16 @@ export class QuizService {
     );
   }
   // Dans quiz.service.ts
-getQuestionsByQuizId(quizId: string): Observable<any[]> {
-  return this.http.get<any[]>(`${this.baseUrl}/quizzes/${quizId}/questions`);
-}
+  getQuestionsByQuizId(quizId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/quizzes/${quizId}/questions`);
+  }
 
   // === MÉTHODES STATUT UTILISATEUR ===
 
   updateQuizUserStatus(quizId: string, status: 'not-started' | 'in-progress' | 'completed'): Observable<Quiz> {
     const headers = this.getAuthHeaders();
     const body = { userStatus: status };
-    
+
     return this.http.patch<any>(`${this.baseUrl}/${quizId}/user-status`, body, { headers }).pipe(
       map(response => this.transformQuizFromAPI(response)),
       tap(quiz => {
@@ -544,20 +544,20 @@ getQuestionsByQuizId(quizId: string): Observable<any[]> {
   private updateQuizStats(quizId: string, result: QuizResult): void {
     const currentQuizzes = this.quizzesSubject.value;
     const quizIndex = currentQuizzes.findIndex(q => (q.id || q._id) === quizId);
-    
+
     if (quizIndex !== -1) {
       const quiz = currentQuizzes[quizIndex];
       // Recalculer les statistiques (simulation - en réalité cela devrait venir du backend)
       const newParticipants = (quiz.participants || 0) + 1;
       const currentTotal = (quiz.averageScore || 0) * (quiz.participants || 0);
       const newAverage = Math.round((currentTotal + result.score) / newParticipants);
-      
+
       currentQuizzes[quizIndex] = {
         ...quiz,
         participants: newParticipants,
         averageScore: newAverage
       };
-      
+
       this.quizzesSubject.next([...currentQuizzes]);
     }
   }
@@ -570,7 +570,7 @@ getQuestionsByQuizId(quizId: string): Observable<any[]> {
     }
 
     return this.quizzes$.pipe(
-      map(quizzes => 
+      map(quizzes =>
         quizzes.filter(quiz =>
           quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           quiz.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -600,8 +600,8 @@ getQuestionsByQuizId(quizId: string): Observable<any[]> {
 
         if (filters.minQuestions !== undefined) {
           filtered = filtered.filter(quiz => {
-            const questionCount = Array.isArray(quiz.questions) 
-              ? quiz.questions.length 
+            const questionCount = Array.isArray(quiz.questions)
+              ? quiz.questions.length
               : (quiz.questions as any || 0);
             return questionCount >= filters.minQuestions!;
           });
@@ -636,8 +636,8 @@ getQuestionsByQuizId(quizId: string): Observable<any[]> {
           draftQuizzes: quizzes.filter(q => q.status === 'draft').length,
           archivedQuizzes: quizzes.filter(q => q.status === 'archived').length,
           totalQuestions: quizzes.reduce((total, quiz) => {
-            const questionCount = Array.isArray(quiz.questions) 
-              ? quiz.questions.length 
+            const questionCount = Array.isArray(quiz.questions)
+              ? quiz.questions.length
               : (quiz.questions as any || 0);
             return total + questionCount;
           }, 0),
@@ -652,7 +652,7 @@ getQuestionsByQuizId(quizId: string): Observable<any[]> {
             quizzes.filter(quiz => quiz.participants && quiz.participants > 0).length
           ) || 0
         };
-        
+
         return stats;
       })
     );
@@ -674,7 +674,7 @@ getQuestionsByQuizId(quizId: string): Observable<any[]> {
 
   // Méthode pour vérifier la connectivité au backend
   checkBackendConnection(): Observable<boolean> {
-    return this.http.get(`${this.baseUrl}/health`, { 
+    return this.http.get(`${this.baseUrl}/health`, {
       headers: this.getAuthHeaders(),
       observe: 'response'
     }).pipe(
@@ -684,7 +684,7 @@ getQuestionsByQuizId(quizId: string): Observable<any[]> {
   }
 
   // Méthode pour synchroniser les données locales avec le backend
-  synchronizeData(): Observable<{ quizzes: Quiz[], questions: {[quizId: string]: Question[]} }> {
+  synchronizeData(): Observable<{ quizzes: Quiz[], questions: { [quizId: string]: Question[] } }> {
     return this.getQuizzes(true).pipe(
       switchMap(quizzes => {
         const questionRequests = quizzes.map(quiz => {
@@ -700,11 +700,11 @@ getQuestionsByQuizId(quizId: string): Observable<any[]> {
         ]);
       }),
       map(([quizzes, questionData]: [Quiz[], any[]]) => {
-        const questionsMap: {[quizId: string]: Question[]} = {};
+        const questionsMap: { [quizId: string]: Question[] } = {};
         questionData.forEach(data => {
           questionsMap[data.quizId] = data.questions;
         });
-        
+
         return { quizzes, questions: questionsMap };
       })
     );

@@ -3,13 +3,15 @@
   max-width: 1200px;
   margin: 0 auto;
 }
+
 .modal-content {
   background: #fff !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.15) !important;
   border: 2px solid #e0e0e0 !important;
   padding: 32px !important;
 }
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -154,6 +156,7 @@
   resize: vertical;
   min-height: 100px;
 }
+
 .cbus-checkbox-list {
   width: 100%;
   border: 1px solid #e0e0e0;
@@ -163,22 +166,27 @@
   margin-top: 8px;
   margin-bottom: 8px;
 }
+
 .cbu-checkbox {
   display: flex;
-  align-items: center;  /* centre verticalement */
-  gap: 6px;             /* petit espace entre case et texte */
+  align-items: center;
+  /* centre verticalement */
+  gap: 6px;
+  /* petit espace entre case et texte */
   margin: 0;
   padding: 0;
 }
 
 .cbu-checkbox input[type="checkbox"] {
-  margin: 0; /* supprime les marges par défaut */
+  margin: 0;
+  /* supprime les marges par défaut */
 }
 
 .cbu-checkbox label {
   margin: 0;
   padding: 0;
-  white-space: normal; /* permet au texte de passer à la ligne si nécessaire */
+  white-space: normal;
+  /* permet au texte de passer à la ligne si nécessaire */
 }
 
 
@@ -190,6 +198,7 @@
 .quiz-cbus {
   margin-top: 8px;
 }
+
 .cbu-item {
   padding: 2px 8px;
   margin: 2px 0;
@@ -205,30 +214,30 @@
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .quiz-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .quiz-stats {
     gap: 16px;
   }
-  
+
   .quiz-actions {
     gap: 4px;
   }
-  
+
   .quiz-actions .btn {
     font-size: 0.8rem;
     padding: 6px 8px;
     min-width: 80px;
   }
-  
+
   .modal-content {
     padding: 20px;
     background-color: aliceblue;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
