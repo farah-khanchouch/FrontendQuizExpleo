@@ -29,7 +29,7 @@ export class BadgeManagementComponent implements OnInit {
   availableIcons = ['🏆', '🥇', '🎯', '⭐', '💎', '🔥', '⚡', '🚀', '🎖️', '👑', '🥈', '🥉'];
   availableColors = ['#6846C6', '#059669', '#DC2626', '#D97706', '#7C3AED', '#0891B2', '#BE185D'];
 
-  constructor(private badgeService: BadgeService) {}
+  constructor(private badgeService: BadgeService) { }
 
   ngOnInit() {
     this.loadBadges();
@@ -138,22 +138,22 @@ export class BadgeManagementComponent implements OnInit {
 
   duplicateBadge(badge: Badge) {
     const { _id, id, ...rest } = badge; // Retire les IDs
-const duplicated = {
-  ...rest,
-  name: badge.name + '',
-  isActive: false,
-  earnedBy: 0,
-  createdAt: new Date()
-};
+    const duplicated = {
+      ...rest,
+      name: badge.name + '',
+      isActive: false,
+      earnedBy: 0,
+      createdAt: new Date()
+    };
 
-this.badgeService.createBadge(duplicated).subscribe({
-  next: (newBadge) => {
-    this.badges.push(newBadge); // La copie s’affiche immédiatement
-  },
-  error: (err) => {
-    console.error('Erreur duplication badge', err);
-  }
-});
+    this.badgeService.createBadge(duplicated).subscribe({
+      next: (newBadge) => {
+        this.badges.push(newBadge); // La copie s’affiche immédiatement
+      },
+      error: (err) => {
+        console.error('Erreur duplication badge', err);
+      }
+    });
   }
 
   getTypeBadgeClass(type: string): string {

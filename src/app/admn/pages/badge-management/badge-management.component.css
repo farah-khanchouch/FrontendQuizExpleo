@@ -312,7 +312,7 @@
 .modal-content {
   background: #fff !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.15) !important;
   border: 2px solid #e0e0e0 !important;
   padding: 32px !important;
 }
@@ -323,39 +323,39 @@
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .badges-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .badge-header {
     gap: 12px;
   }
-  
+
   .badge-icon {
     width: 48px;
     height: 48px;
     font-size: 1.5rem;
   }
-  
+
   .badge-actions {
     gap: 4px;
   }
-  
+
   .badge-actions .btn {
     font-size: 0.75rem;
     padding: 4px 8px;
     min-width: 80px;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .icon-selector {
     grid-template-columns: repeat(4, 1fr);
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
