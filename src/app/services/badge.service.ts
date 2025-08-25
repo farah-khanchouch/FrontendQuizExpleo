@@ -9,7 +9,7 @@ import { Badge, BadgeCreateDto, BadgeUpdateDto } from '../../models/quiz.model';
 })
 export class BadgeService {
 
-  private apiUrl = 'http://localhost:3000/api/badges'; // 🔁 change l'URL si besoin
+  private apiUrl = 'https://quizonexpleo.up.railway.app/api/badges'; // 🔁 change l'URL si besoin
 
   constructor(private http: HttpClient) { }
 

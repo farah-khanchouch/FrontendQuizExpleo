@@ -15,7 +15,8 @@
       <span><strong>Thème :</strong> {{ quiz.theme }}</span>
       <span><strong>Durée :</strong> {{ quiz.duration }} min</span>
     </div>
-    <img *ngIf="quiz.imageUrl" [src]="'http://localhost:3000' + quiz.imageUrl" alt="Quiz image" style="width:120px;" />
+    <img *ngIf="quiz.imageUrl" [src]="'https://quizonexpleo.up.railway.app' + quiz.imageUrl" alt="Quiz image"
+      style="width:120px;" />
     <button class="btn" [ngClass]="quiz.progressStatus === 'completed' ? 'btn-secondary' : 'btn-primary'"
       (click)="navigateToQuiz(quiz.id)">
       {{ quiz.progressStatus === 'completed' ? 'Refaire' : 'Commencer' }}

@@ -31,7 +31,7 @@ export interface UserResult {
   providedIn: 'root'
 })
 export class LeaderboardService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'https://quizonexpleo.up.railway.app/api';
 
   constructor(
     private http: HttpClient,

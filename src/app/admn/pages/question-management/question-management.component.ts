@@ -12,7 +12,7 @@ interface Question {
   type: 'qcm' | 'vrai-faux' | 'libre';
   question: string;
   options?: string[];
-  correctAnswer: number | number[] | string | boolean;  points: number;
+  correctAnswer: number | number[] | string | boolean; points: number;
   explanation?: string;
   quizId?: string;
 }
@@ -55,7 +55,7 @@ export class QuestionManagementComponent implements OnInit {
     private router: Router,
     private http: HttpClient
   ) { }
-  private baseUrl = 'http://localhost:3000/api/quizzes';
+  private baseUrl = 'https://quizonexpleo.up.railway.app/api/quizzes';
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -172,7 +172,7 @@ export class QuestionManagementComponent implements OnInit {
       console.warn('deleteQuestion called with undefined questionId');
       return;
     }
-    
+
     const question = this.questions.find(q => q.id === questionId);
     if (question) {
       this.supprimerQuestion(question);
@@ -245,14 +245,14 @@ export class QuestionManagementComponent implements OnInit {
       alert('Veuillez remplir tous les champs obligatoires.');
       return;
     }
-  // PATCH : conversion automatique pour vrai-faux
-  if (this.newQuestion.type === 'vrai-faux') {
-    if (this.newQuestion.correctAnswer === 'Vrai' || this.newQuestion.correctAnswer === true) {
-      this.newQuestion.correctAnswer = true;
-    } else if (this.newQuestion.correctAnswer === 'Faux' || this.newQuestion.correctAnswer === false) {
-      this.newQuestion.correctAnswer = false;
+    // PATCH : conversion automatique pour vrai-faux
+    if (this.newQuestion.type === 'vrai-faux') {
+      if (this.newQuestion.correctAnswer === 'Vrai' || this.newQuestion.correctAnswer === true) {
+        this.newQuestion.correctAnswer = true;
+      } else if (this.newQuestion.correctAnswer === 'Faux' || this.newQuestion.correctAnswer === false) {
+        this.newQuestion.correctAnswer = false;
+      }
     }
-  }
     if (!this.quizId) {
       alert('Erreur: ID du quiz manquant. Impossible de créer la question.');
       return;
@@ -380,7 +380,7 @@ export class QuestionManagementComponent implements OnInit {
   // MÉTHODE PRINCIPALE DE SYNCHRONISATION AVEC GESTION D'ERREURS 404
   async synchroniserAvecQuiz() {
     console.log('🔄 Début de la synchronisation complète...');
-    
+
     if (!this.quizId) {
       alert('Erreur: ID du quiz manquant');
       return;
@@ -414,7 +414,7 @@ export class QuestionManagementComponent implements OnInit {
           console.log(`✅ Question ${questionId} supprimée`);
         } catch (error: any) {
           console.warn(`⚠️ Erreur suppression ${questionId}:`, error);
-          
+
           if (error.status === 404) {
             // Question déjà supprimée côté serveur, c'est OK
             console.log(`ℹ️ Question ${questionId} déjà supprimée côté serveur`);
@@ -432,7 +432,7 @@ export class QuestionManagementComponent implements OnInit {
         const question = this.questionsACreer[i];
         try {
           console.log(`Création question ${i + 1}/${this.questionsACreer.length}`);
-          
+
           if (!this.validateQuestion(question)) {
             throw new Error(`Question invalide: ${question.question || 'question vide'}`);
           }
@@ -448,7 +448,7 @@ export class QuestionManagementComponent implements OnInit {
           };
 
           const questionCreee = await this.quizService.createQuestion(this.quizId, questionData).toPromise();
-          
+
           if (questionCreee) {
             // Mettre à jour l'ID dans la liste locale
             const index = this.questions.findIndex(q => q === question);
@@ -460,7 +460,7 @@ export class QuestionManagementComponent implements OnInit {
           } else {
             throw new Error('Réponse vide du serveur');
           }
-          
+
         } catch (error: any) {
           console.error(`❌ Erreur création question ${i + 1}:`, error);
           operationsEchouees++;
@@ -479,7 +479,7 @@ export class QuestionManagementComponent implements OnInit {
 
         try {
           console.log(`Mise à jour question ${questionId}`);
-          
+
           if (!this.validateQuestion(question)) {
             throw new Error(`Question invalide: ${question.question}`);
           }
@@ -497,10 +497,10 @@ export class QuestionManagementComponent implements OnInit {
           await this.quizService.updateQuestion(questionId, questionData).toPromise();
           operationsReussies++;
           console.log(`✅ Question ${questionId} mise à jour`);
-          
+
         } catch (error: any) {
           console.warn(`⚠️ Erreur mise à jour ${questionId}:`, error);
-          
+
           if (error.status === 404) {
             // Question supprimée côté serveur, essayer de la recréer
             console.log(`ℹ️ Question ${questionId} n'existe plus, tentative de recréation...`);
@@ -546,7 +546,7 @@ export class QuestionManagementComponent implements OnInit {
       // 6. AFFICHER le résultat
       const totalOperations = operationsReussies + operationsEchouees;
       let message = '';
-      
+
       if (operationsEchouees === 0) {
         message = `✅ Synchronisation réussie! ${operationsReussies} opération(s) effectuée(s).`;
         console.log('🎉 Synchronisation 100% réussie!');
@@ -563,14 +563,14 @@ export class QuestionManagementComponent implements OnInit {
         }
         console.error('❌ Synchronisation complètement échouée');
       }
-      
+
       alert(message);
 
     } catch (error: any) {
       console.error('💥 Erreur critique lors de la synchronisation:', error);
-      
+
       let messageErreur = 'Erreur critique lors de la synchronisation:\n';
-      
+
       if (error.status) {
         switch (error.status) {
           case 401:
@@ -591,7 +591,7 @@ export class QuestionManagementComponent implements OnInit {
       } else {
         messageErreur += error.message || 'Erreur inconnue';
       }
-      
+
       alert(messageErreur);
     }
   }
@@ -604,7 +604,7 @@ export class QuestionManagementComponent implements OnInit {
   // Méthode de diagnostic pour identifier les problèmes
   async diagnostiquerProblemes() {
     console.log('🔍 Diagnostic des problèmes...');
-    
+
     if (!this.quizId) {
       console.error('❌ Quiz ID manquant');
       return;
@@ -614,21 +614,21 @@ export class QuestionManagementComponent implements OnInit {
       // 1. Vérifier si le quiz existe
       console.log('Vérification du quiz...');
       const quiz = await this.quizService.getQuizById(this.quizId).toPromise();
-      
+
       if (!quiz) {
         throw new Error('Quiz non trouvé');
       }
-      
+
       console.log('✅ Quiz trouvé:', quiz.title);
 
       // 2. Vérifier les questions côté serveur
       console.log('Vérification des questions côté serveur...');
       const questionsServeur = await this.quizService.getQuestionsByQuiz(this.quizId).toPromise();
-      
+
       if (!questionsServeur) {
         throw new Error('Questions serveur non trouvées');
       }
-      
+
       console.log(`✅ ${questionsServeur.length} questions trouvées côté serveur`);
 
       // 3. Comparer avec les questions locales
@@ -639,14 +639,14 @@ export class QuestionManagementComponent implements OnInit {
       // 4. Vérifier les IDs des questions locales
       const questionsAvecId = this.questions.filter(q => q.id);
       const questionsSansId = this.questions.filter(q => !q.id);
-      
+
       console.log(`- Questions locales avec ID: ${questionsAvecId.length}`);
       console.log(`- Questions locales sans ID: ${questionsSansId.length}`);
 
       // 5. Vérifier si les IDs locaux existent côté serveur
       const idsServeur = new Set(questionsServeur.map(q => q.id));
       const idsLocauxInexistants = questionsAvecId.filter(q => q.id && !idsServeur.has(q.id)).map(q => q.id);
-      
+
       if (idsLocauxInexistants.length > 0) {
         console.warn('⚠️ IDs locaux inexistants côté serveur:', idsLocauxInexistants);
       }
@@ -659,7 +659,7 @@ export class QuestionManagementComponent implements OnInit {
       rapport += `Questions serveur: ${questionsServeur.length}\n`;
       rapport += `Questions avec ID: ${questionsAvecId.length}\n`;
       rapport += `Questions sans ID: ${questionsSansId.length}\n`;
-      
+
       if (idsLocauxInexistants.length > 0) {
         rapport += `\n⚠️ PROBLÈME: ${idsLocauxInexistants.length} question(s) locale(s) avec des IDs inexistants côté serveur\n`;
         rapport += `IDs problématiques: ${idsLocauxInexistants.join(', ')}\n`;
@@ -683,18 +683,18 @@ export class QuestionManagementComponent implements OnInit {
 
     try {
       console.log('🔄 Rechargement complet depuis le serveur...');
-      
+
       // Reset complet
       this.questionsModifiees.clear();
       this.questionsACreer = [];
       this.questionsASupprimer.clear();
       this.modificationsPendantes = false;
-      
+
       // Recharger depuis le serveur
       await this.loadQuestionsFromServer();
-      
+
       alert('✅ Synchronisation complète terminée. Toutes les données ont été rechargées depuis le serveur.');
-      
+
     } catch (error: any) {
       console.error('❌ Erreur synchronisation complète:', error);
       alert(`Erreur: ${error.message || 'Erreur inconnue'}`);
@@ -711,7 +711,7 @@ export class QuestionManagementComponent implements OnInit {
     this.questionsACreer = [];
     this.questionsASupprimer.clear();
     this.modificationsPendantes = false;
-    
+
     this.loadQuestionsFromServer();
     alert('Modifications annulées. Données rechargées depuis le serveur.');
   }

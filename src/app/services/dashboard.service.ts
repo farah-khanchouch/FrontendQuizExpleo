@@ -84,7 +84,7 @@ export interface DashboardData {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'https://quizonexpleo.up.railway.app/api';
   private dashboardDataSubject = new BehaviorSubject<DashboardData | null>(null);
   public dashboardData$ = this.dashboardDataSubject.asObservable();
 

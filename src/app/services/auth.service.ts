@@ -17,11 +17,11 @@ export class AuthService {
       this.currentUserSubject.next(JSON.parse(savedUser));
     }
   }
-  
+
 
   login(email: string, password: string): Observable<User> {
     return new Observable(observer => {
-      this.http.post<any>('http://localhost:3000/api/auth/login', {
+      this.http.post<any>('https://quizonexpleo.up.railway.app/api/auth/login', {
         email,
         password
       }).subscribe({
@@ -38,10 +38,10 @@ export class AuthService {
       });
     });
   }
-  
+
   loginWithGoogle(token: string): Observable<User> {
     return new Observable(observer => {
-      this.http.post<any>('http://localhost:3000/api/auth/login/google', { token }).subscribe({
+      this.http.post<any>('https://quizonexpleo.up.railway.app/api/auth/login/google', { token }).subscribe({
         next: (res) => {
           localStorage.setItem('token', res.token);
           localStorage.setItem('currentUser', JSON.stringify(res.user));
@@ -55,7 +55,7 @@ export class AuthService {
       });
     });
   }
-      
+
   logout(): void {
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
@@ -68,17 +68,18 @@ export class AuthService {
       this.currentUserSubject.next(user);
       return user;
     }
-    return null;  }
+    return null;
+  }
 
-  
-    isAuthenticated(): boolean {
-      return this.getCurrentUser() !== null;
-    }
-    
-    isAdmin(): boolean {
-      const user = this.getCurrentUser();
-      return user?.role === 'admin';
-    }
+
+  isAuthenticated(): boolean {
+    return this.getCurrentUser() !== null;
+  }
+
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.role === 'admin';
+  }
   register(userData: {
     fullname: string,
     email: string,
@@ -86,7 +87,7 @@ export class AuthService {
     confirmPassword: string,
     cbu: string
   }): Observable<any> {
-    return this.http.post('http://localhost:3000/api/auth/register', userData);
+    return this.http.post('https://quizonexpleo.up.railway.app/api/auth/register', userData);
   }
 
 

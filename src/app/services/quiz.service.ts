@@ -9,8 +9,8 @@ import { of } from 'rxjs';
 })
 export class QuizService {
 
-  private baseUrl = 'http://localhost:3000/api/quizzes';
-  private questionsUrl = 'http://localhost:3000/api/questions';
+  private baseUrl = 'https://quizonexpleo.up.railway.app/api/quizzes';
+  private questionsUrl = 'https://quizonexpleo.up.railway.app/api/questions';
 
   // BehaviorSubjects pour la gestion d'état en temps réel
   private quizzesSubject = new BehaviorSubject<Quiz[]>([]);

@@ -80,7 +80,7 @@ export interface PerformanceMetrics {
     providedIn: 'root'
 })
 export class StatsService {
-    private readonly API_BASE = 'http://localhost:3000/api';
+    private readonly API_BASE = 'https://quizonexpleo.up.railway.app/api';
 
     private statsSubject = new BehaviorSubject<UserStatistics | null>(null);
     public stats$ = this.statsSubject.asObservable();
@@ -103,76 +103,76 @@ export class StatsService {
     /**
      * Charge les statistiques de l'utilisateur depuis la base de données
      */
-   // Dans votre stats.service.ts, modifiez la méthode loadUserStatistics
+    // Dans votre stats.service.ts, modifiez la méthode loadUserStatistics
 
-public loadUserStatistics(forceReload = false): Observable<UserStatistics> {
-    const user = this.authService.getCurrentUser();
-    if (!user || !user.id){ 
-        console.error('Utilisateur non connecté ou ID manquant');
-        return of(this.getEmptyStats());
+    public loadUserStatistics(forceReload = false): Observable<UserStatistics> {
+        const user = this.authService.getCurrentUser();
+        if (!user || !user.id) {
+            console.error('Utilisateur non connecté ou ID manquant');
+            return of(this.getEmptyStats());
+        }
+
+        // Si les données sont déjà chargées et qu'on ne force pas le rechargement
+        if (!forceReload && this.userResults.length > 0 && this.statsSubject.value) {
+            return of(this.statsSubject.value);
+        }
+
+        console.log('Chargement des statistiques pour l\'utilisateur ID:', user.id);
+        this.isLoadingSubject.next(true);
+
+        return combineLatest([
+            // ✅ CORRECTION : Utilisez user.cbu pour filtrer les quiz disponibles
+            this.loadAvailableQuizzes(user.cbu || ''),  // <- CBU pour filtrer les quiz
+            // ✅ CORRECTION : Utilisez user.id pour charger les résultats
+            this.loadUserResults(user.id)  // <- _ID pour les résultats utilisateur
+        ]).pipe(
+            map(([availableQuizzes, userResults]) => {
+                console.log('Données chargées - Quiz disponibles:', availableQuizzes.length, 'Résultats:', userResults.length);
+
+                // Stocker les données dans les propriétés de classe
+                this.availableQuizzes = availableQuizzes;
+                this.userResults = userResults;
+
+                // Calculer et retourner les statistiques
+                const stats = this.calculateAllStatistics();
+                this.statsSubject.next(stats);
+
+                // Sauvegarder localement pour éviter les pertes
+                this.saveStatsToLocalStorage(stats);
+
+                return stats;
+            }),
+            catchError(error => {
+                console.error('Erreur lors du chargement des statistiques:', error);
+
+                // Essayer de récupérer depuis le localStorage en cas d'erreur réseau
+                const cachedStats = this.getStatsFromLocalStorage();
+                if (cachedStats) {
+                    console.log('Récupération des statistiques depuis le cache local');
+                    this.statsSubject.next(cachedStats);
+                    return of(cachedStats);
+                }
+
+                const emptyStats = this.getEmptyStats();
+                this.statsSubject.next(emptyStats);
+                return of(emptyStats);
+            }),
+            finalize(() => {
+                this.isLoadingSubject.next(false);
+            })
+        );
     }
-
-    // Si les données sont déjà chargées et qu'on ne force pas le rechargement
-    if (!forceReload && this.userResults.length > 0 && this.statsSubject.value) {
-        return of(this.statsSubject.value);
-    }
-
-    console.log('Chargement des statistiques pour l\'utilisateur ID:', user.id);
-    this.isLoadingSubject.next(true);
-
-    return combineLatest([
-        // ✅ CORRECTION : Utilisez user.cbu pour filtrer les quiz disponibles
-        this.loadAvailableQuizzes(user.cbu || ''),  // <- CBU pour filtrer les quiz
-        // ✅ CORRECTION : Utilisez user.id pour charger les résultats
-        this.loadUserResults(user.id)  // <- _ID pour les résultats utilisateur
-    ]).pipe(
-        map(([availableQuizzes, userResults]) => {
-            console.log('Données chargées - Quiz disponibles:', availableQuizzes.length, 'Résultats:', userResults.length);
-            
-            // Stocker les données dans les propriétés de classe
-            this.availableQuizzes = availableQuizzes;
-            this.userResults = userResults;
-            
-            // Calculer et retourner les statistiques
-            const stats = this.calculateAllStatistics();
-            this.statsSubject.next(stats);
-            
-            // Sauvegarder localement pour éviter les pertes
-            this.saveStatsToLocalStorage(stats);
-            
-            return stats;
-        }),
-        catchError(error => {
-            console.error('Erreur lors du chargement des statistiques:', error);
-            
-            // Essayer de récupérer depuis le localStorage en cas d'erreur réseau
-            const cachedStats = this.getStatsFromLocalStorage();
-            if (cachedStats) {
-                console.log('Récupération des statistiques depuis le cache local');
-                this.statsSubject.next(cachedStats);
-                return of(cachedStats);
-            }
-            
-            const emptyStats = this.getEmptyStats();
-            this.statsSubject.next(emptyStats);
-            return of(emptyStats);
-        }),
-        finalize(() => {
-            this.isLoadingSubject.next(false);
-        })
-    );
-}
     /**
      * Ajoute un nouveau résultat de quiz et met à jour les statistiques
      */
     public addQuizResult(result: Partial<QuizResult>): Observable<UserStatistics> {
         const user = this.authService.getCurrentUser();
-    
+
         // ✅ AJOUTEZ CES LOGS POUR DÉBUGGER
         console.log('🔍 Current user object:', user);
         console.log('🔍 User _id:', user?._id);
         console.log('🔍 User keys:', user ? Object.keys(user) : 'user is null');
-        
+
         if (!user || !user.id) {
             console.error('❌ Utilisateur non connecté - user:', user);
             throw new Error('Utilisateur non connecté');
@@ -208,17 +208,17 @@ public loadUserStatistics(forceReload = false): Observable<UserStatistics> {
         return this.http.post<QuizResult>(`${this.API_BASE}/quiz-results`, completeResult).pipe(
             tap(savedResult => {
                 console.log('Résultat sauvegardé avec succès:', savedResult);
-                
+
                 // Convertir la date
                 savedResult.completedAt = new Date(savedResult.completedAt);
-                
+
                 // Ajouter à la liste locale
                 this.userResults.push(savedResult);
-                
+
                 // Recalculer les statistiques
                 const updatedStats = this.calculateAllStatistics();
                 this.statsSubject.next(updatedStats);
-                
+
                 // Mettre à jour le cache local
                 this.saveStatsToLocalStorage(updatedStats);
             }),
@@ -227,18 +227,18 @@ public loadUserStatistics(forceReload = false): Observable<UserStatistics> {
             }),
             catchError(error => {
                 console.error('Erreur lors de la sauvegarde du résultat:', error);
-                
+
                 // En cas d'erreur, ajouter quand même localement
                 const localResult = { ...completeResult, id: Date.now().toString() } as QuizResult;
                 this.userResults.push(localResult);
-                
+
                 const updatedStats = this.calculateAllStatistics();
                 this.statsSubject.next(updatedStats);
                 this.saveStatsToLocalStorage(updatedStats);
-                
+
                 // Marquer ce résultat comme "à synchroniser" plus tard
                 this.markForLaterSync(localResult);
-                
+
                 return of(updatedStats);
             })
         );
@@ -270,10 +270,10 @@ public loadUserStatistics(forceReload = false): Observable<UserStatistics> {
      */
     private loadUserResults(userId: string): Observable<QuizResult[]> {
         console.log('Chargement des résultats pour User ID:', userId);
-        
+
         const cleanUserId = encodeURIComponent(userId.trim());
         const url = `${this.API_BASE}/quiz-results/${cleanUserId}`;
-        
+
         return this.http.get<QuizResult[]>(url).pipe(
             map(results => {
                 console.log('Résultats reçus du serveur:', results);
@@ -322,20 +322,20 @@ public loadUserStatistics(forceReload = false): Observable<UserStatistics> {
                 const cached = localStorage.getItem(cacheKey);
                 if (cached) {
                     const data = JSON.parse(cached);
-                    
+
                     // Vérifier que les données ne sont pas trop anciennes (24h)
                     const isRecent = (new Date().getTime() - data.timestamp) < 24 * 60 * 60 * 1000;
                     if (isRecent && data.stats) {
                         // Restaurer les données en mémoire
                         this.userResults = data.userResults || [];
                         this.availableQuizzes = data.availableQuizzes || [];
-                        
+
                         // Convertir les dates
                         this.userResults = this.userResults.map(r => ({
                             ...r,
                             completedAt: new Date(r.completedAt)
                         }));
-                        
+
                         return data.stats;
                     }
                 }
@@ -353,7 +353,7 @@ public loadUserStatistics(forceReload = false): Observable<UserStatistics> {
         this.userResults = [];
         this.availableQuizzes = [];
         this.statsSubject.next(null);
-        
+
         // Nettoyer le localStorage
         try {
             const keys = Object.keys(localStorage);

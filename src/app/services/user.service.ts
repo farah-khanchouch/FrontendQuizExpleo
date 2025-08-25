@@ -13,7 +13,7 @@ export interface User {
   cbu?: string;
   totalPoints?: number;
   joinedAt: string;
-  
+
   // Propriétés calculées dynamiquement
   totalQuizzes: number;
   completedQuizzes: number;
@@ -21,7 +21,7 @@ export interface User {
   badges: number;
   status: 'active' | 'inactive' | 'blocked';
   lastActivity: string;
-  
+
   // Nouvelles propriétés pour plus de détails
   bestScore?: number;
   totalTimeSpent?: number;
@@ -45,27 +45,27 @@ interface QuizResult {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:3000/api/users';
-  private quizResultsUrl = 'http://localhost:3000/api/quiz-results';
-  private quizUrl = 'http://localhost:3000/api/quiz';
+  private apiUrl = 'https://quizonexpleo.up.railway.app/api/users';
+  private quizResultsUrl = 'https://quizonexpleo.up.railway.app/api/quiz-results';
+  private quizUrl = 'https://quizonexpleo.up.railway.app/api/quiz';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // ✅ NOUVELLE MÉTHODE : Récupérer tous les utilisateurs avec leurs vraies statistiques
- // Dans user.service.ts, remplacez la méthode getAllUsers par :
-getAllUsers(): Observable<User[]> {
-  return this.http.get<User[]>(`${this.apiUrl}/../stats/users`).pipe(
-    map(users => {
-      console.log('Utilisateurs avec vraies stats:', users);
-      return users;
-    })
-  );
-}
+  // Dans user.service.ts, remplacez la méthode getAllUsers par :
+  getAllUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/../stats/users`).pipe(
+      map(users => {
+        console.log('Utilisateurs avec vraies stats:', users);
+        return users;
+      })
+    );
+  }
   // ✅ NOUVELLE MÉTHODE : Calculer les statistiques d'un utilisateur
   private calculateUserStats(userResults: QuizResult[], availableQuizzes: any[]): Partial<User> {
     const completedQuizzes = userResults.length;
     const totalQuizzes = availableQuizzes.length;
-    
+
     let averageScore = 0;
     let bestScore = 0;
     let totalTimeSpent = 0;
@@ -76,18 +76,18 @@ getAllUsers(): Observable<User[]> {
       // Calculer le score moyen
       const totalScore = userResults.reduce((sum, result) => sum + (result.percentage || 0), 0);
       averageScore = Math.round(totalScore / completedQuizzes);
-      
+
       // Trouver le meilleur score
       bestScore = Math.max(...userResults.map(r => r.percentage || 0));
-      
+
       // Calculer le temps total
       totalTimeSpent = userResults.reduce((sum, result) => sum + (result.timeSpent || 0), 0);
-      
+
       // Calculer les badges (exemple : 1 badge par tranche de 10 points de moyenne)
       badges = Math.floor(averageScore / 10);
-      
+
       // Trouver la dernière activité
-      const lastResult = userResults.sort((a, b) => 
+      const lastResult = userResults.sort((a, b) =>
         new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
       )[0];
       lastActivity = lastResult.completedAt;
@@ -128,14 +128,14 @@ getAllUsers(): Observable<User[]> {
       )
     }).pipe(
       map(({ userResults, user, availableQuizzes }) => {
-        const userQuizzes = availableQuizzes.filter(quiz => 
-          quiz.status === 'active' && 
-          quiz.cbus && 
+        const userQuizzes = availableQuizzes.filter(quiz =>
+          quiz.status === 'active' &&
+          quiz.cbus &&
           quiz.cbus.includes(user.cbu)
         );
-        
+
         const stats = this.calculateUserStats(userResults, userQuizzes);
-        
+
         return {
           totalQuizzes: stats.totalQuizzes || 0,
           completedQuizzes: stats.completedQuizzes || 0,
@@ -185,11 +185,11 @@ getAllUsers(): Observable<User[]> {
   }
 
   // ✅ Mettre à jour le profil complet
-  updateProfile(userId: string, profileData: { 
-    username?: string; 
-    email?: string; 
-    cbu?: string; 
-    avatar?: string 
+  updateProfile(userId: string, profileData: {
+    username?: string;
+    email?: string;
+    cbu?: string;
+    avatar?: string
   }): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${userId}/profile`, profileData);
   }
@@ -212,7 +212,7 @@ getAllUsers(): Observable<User[]> {
   // ✅ NOUVEAU : Obtenir les détails d'activité d'un utilisateur
   getUserActivity(userId: string, limit: number = 10): Observable<QuizResult[]> {
     return this.http.get<QuizResult[]>(`${this.quizResultsUrl}/${userId}?limit=${limit}`).pipe(
-      map(results => results.sort((a, b) => 
+      map(results => results.sort((a, b) =>
         new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
       ))
     );
@@ -230,9 +230,9 @@ getAllUsers(): Observable<User[]> {
         const totalUsers = users.length;
         const activeUsers = users.filter(u => u.status === 'active').length;
         const totalQuizzesTaken = users.reduce((sum, u) => sum + u.completedQuizzes, 0);
-        
+
         const usersWithQuizzes = users.filter(u => u.completedQuizzes > 0);
-        const averageGlobalScore = usersWithQuizzes.length > 0 
+        const averageGlobalScore = usersWithQuizzes.length > 0
           ? Math.round(usersWithQuizzes.reduce((sum, u) => sum + u.averageScore, 0) / usersWithQuizzes.length)
           : 0;
 
