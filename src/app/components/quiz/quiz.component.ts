@@ -76,7 +76,7 @@ export class QuizComponent implements OnInit, OnDestroy {
           this.quizService.getQuestionsByQuiz(quizId).subscribe(
             (questions: Question[]) => {
               this.quiz!.questions = questions;
-              this.isLoading = false; 
+              this.isLoading = false;
               if (this.currentQuestion?.type === 'vrai-faux' && (!this.currentQuestion.options || this.currentQuestion.options.length === 0)) {
                 this.currentQuestion.options = ['Vrai', 'Faux'];
               }
@@ -240,21 +240,21 @@ export class QuizComponent implements OnInit, OnDestroy {
     if (!this.currentQuestion) return false;
     const correctAnswer = this.currentQuestion.correctAnswer;
 
-    // If no answer selected, return false
+    // Si pas de réponse sélectionnée
     if (this.selectedAnswer === null || this.selectedAnswer === undefined) {
       return false;
     }
 
     if (this.currentQuestion.type === 'qcm') {
-      // For QCM, compare indexes
+      // Pour QCM, comparer les index
       if (typeof correctAnswer === 'number' && typeof this.selectedAnswer === 'number') {
         return this.selectedAnswer === correctAnswer;
       }
-      // If correctAnswer is an array of numbers
+      // Si correctAnswer est un tableau de nombres
       if (Array.isArray(correctAnswer) && typeof this.selectedAnswer === 'number') {
         return correctAnswer.includes(this.selectedAnswer);
       }
-      // If correctAnswer is text, compare with selected option text
+      // Si correctAnswer est du texte, comparer avec le texte de l'option sélectionnée
       if (typeof correctAnswer === 'string' && typeof this.selectedAnswer === 'number') {
         const selectedOption = this.currentQuestion.options?.[this.selectedAnswer];
         return selectedOption === correctAnswer;
@@ -262,14 +262,16 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
 
     if (this.currentQuestion.type === 'vrai-faux') {
-      // Convertir les réponses en booléen pour comparer correctement
-      const user = this.selectedAnswer === 'Vrai' ? true : this.selectedAnswer === 'Faux' ? false : this.selectedAnswer;
-      const correct = correctAnswer === true || correctAnswer === 'Vrai' ? true : false;
-      return user === correct;
+      // Convertir les réponses en booléen pour la comparaison
+      const userAnswer = String(this.selectedAnswer).toLowerCase() === 'vrai' ||
+        String(this.selectedAnswer).toLowerCase() === 'true';
+      const correct = String(correctAnswer).toLowerCase() === 'vrai' ||
+        String(correctAnswer).toLowerCase() === 'true';
+      return userAnswer === correct;
     }
 
     if (this.currentQuestion.type === 'libre') {
-      // Free text: compare strings (case insensitive and trimmed)
+      // Réponse libre : comparer les chaînes (insensible à la casse et aux espaces)
       if (typeof this.selectedAnswer === 'string' && typeof correctAnswer === 'string') {
         return this.selectedAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
       }
@@ -313,9 +315,9 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.showResult = false;
     this.showHint = false;
     // À placer juste après l'affichage de la nouvelle question (après currentQuestionIndex++)
-if (this.currentQuestion?.type === 'vrai-faux' && (!this.currentQuestion.options || this.currentQuestion.options.length === 0)) {
-  this.currentQuestion.options = ['Vrai', 'Faux'];
-}
+    if (this.currentQuestion?.type === 'vrai-faux' && (!this.currentQuestion.options || this.currentQuestion.options.length === 0)) {
+      this.currentQuestion.options = ['Vrai', 'Faux'];
+    }
   }
 
   isLastQuestion(): boolean {
@@ -409,7 +411,7 @@ if (this.currentQuestion?.type === 'vrai-faux' && (!this.currentQuestion.options
       });
     }
   }
- 
+
   getOptionLetter(index: number): string {
     return String.fromCharCode(65 + index); // A, B, C, D
   }
