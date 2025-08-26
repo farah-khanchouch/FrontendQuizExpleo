@@ -262,12 +262,15 @@ export class QuizComponent implements OnInit, OnDestroy {
     }
 
     if (this.currentQuestion.type === 'vrai-faux') {
-      // Convertir les réponses en booléen pour la comparaison
-      const userAnswer = String(this.selectedAnswer).toLowerCase() === 'vrai' ||
-        String(this.selectedAnswer).toLowerCase() === 'true';
-      const correct = String(correctAnswer).toLowerCase() === 'vrai' ||
-        String(correctAnswer).toLowerCase() === 'true';
-      return userAnswer === correct;
+      // Normaliser la réponse de l'utilisateur
+      const userAnswer = String(this.selectedAnswer).toLowerCase();
+      const isUserTrue = userAnswer === 'vrai' || userAnswer === 'true';
+
+      // Normaliser la réponse correcte
+      const correctAnswerStr = String(correctAnswer).toLowerCase();
+      const isCorrectTrue = correctAnswerStr === 'vrai' || correctAnswerStr === 'true' || correctAnswer === true;
+
+      return isUserTrue === isCorrectTrue;
     }
 
     if (this.currentQuestion.type === 'libre') {
@@ -415,9 +418,18 @@ export class QuizComponent implements OnInit, OnDestroy {
   getOptionLetter(index: number): string {
     return String.fromCharCode(65 + index); // A, B, C, D
   }
+
   isTFOptionCorrect(option: string): boolean {
-    // Pour vrai/faux, compare en booléen
-    const correct = this.currentQuestion?.correctAnswer === true || this.currentQuestion?.correctAnswer === 'Vrai';
-    return (option === 'Vrai' && correct) || (option === 'Faux' && !correct);
+    if (!this.currentQuestion) return false;
+
+    // Convertir la réponse correcte en booléen
+    const correctAnswer = this.currentQuestion.correctAnswer;
+    const isCorrect = String(correctAnswer).toLowerCase() === 'vrai' ||
+      String(correctAnswer).toLowerCase() === 'true' ||
+      correctAnswer === true;
+
+    // Retourne true si l'option sélectionnée correspond à la réponse correcte
+    return (option === 'Vrai' && isCorrect) ||
+      (option === 'Faux' && !isCorrect);
   }
 }
