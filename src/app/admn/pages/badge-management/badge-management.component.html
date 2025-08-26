@@ -2,8 +2,7 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Gestion des Badges</h1>
-      <p class="page-subtitle">{{ stats.total }} badges • {{ stats.active }} actifs • {{ stats.totalEarned }} obtenus au
-        total</p>
+      <p class="page-subtitle">{{ stats.total }} badges • {{ stats.active }} actifs </p>
     </div>
     <button class="btn btn-primary" (click)="openCreateModal()">
       ➕ Nouveau Badge
@@ -20,10 +19,7 @@
       <div class="stat-number">{{ stats.active }}</div>
       <div class="stat-label">Actifs</div>
     </div>
-    <div class="card stat-card">
-      <div class="stat-number">{{ stats.totalEarned }}</div>
-      <div class="stat-label">Obtenus</div>
-    </div>
+    
     <div class="card stat-card">
       <div class="stat-number">{{ stats.specialBadgesCount }}</div>
       <div class="stat-label">Spéciaux</div>
@@ -64,8 +60,8 @@
 
         <div class="badge-stats">
           <div class="stat">
-            <span class="stat-value">{{ badge.earnedBy }}</span>
-            <span class="stat-label">Obtenus</span>
+            <span class="stat-value"></span>
+            <span class="stat-label"></span>
           </div>
           <div class="stat">
             <span class="stat-value">{{ badge.createdAt | date:'dd/MM/yyyy' }}</span>
@@ -140,7 +136,7 @@
         <label class="form-label">Critères d'obtention</label>
         <input type="text" class="form-input" [ngModel]="editingBadge ? editingBadge.criteria : newBadge.criteria"
           (ngModelChange)="editingBadge ? (editingBadge.criteria = $event) : (newBadge.criteria = $event)"
-          name="criteria" required placeholder="Ex: Score > 90% sur tous les quiz JS">
+          name="criteria" required placeholder="completed;score>=15;time<=120;accuracy>=60">
       </div>
 
       <div class="badge-preview">
