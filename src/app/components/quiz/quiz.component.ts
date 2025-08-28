@@ -43,6 +43,9 @@ export class QuizComponent implements OnInit, OnDestroy {
   description?: string;
   title?: string;
 
+  hasCompletedQuiz = false;
+  canReplay = true; // Par défaut, autoriser à rejouer
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -62,35 +65,56 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   loadQuiz(quizId: string): void {
-    this.quizService.getQuizById(quizId).subscribe(
-      (quiz: Quiz | undefined) => {
-        this.quiz = quiz || null;
-        if (this.quiz) {
-          // Initialiser le timer si le quiz a une durée
-          if (this.quiz.duration && this.quiz.duration > 0) {
-            this.timeRemaining = this.quiz.duration * 60; // Convertir minutes en secondes
-            this.startTimer();
-          }
+    this.isLoading = true;
+    this.quizService.getQuizById(quizId).subscribe({
+      next: (quiz) => {
+        this.quiz = quiz;
+        // Vérifier si l'utilisateur a déjà complété ce quiz
+        this.quizService.hasUserCompletedQuiz(quizId).subscribe({
+          next: (result) => {
+            this.hasCompletedQuiz = result.completed;
+            this.canReplay = quiz.isReplayable || !this.hasCompletedQuiz;
+            this.isLoading = false;
 
-          // Charger les questions créées par l'admin pour ce quiz
-          this.quizService.getQuestionsByQuiz(quizId).subscribe(
-            (questions: Question[]) => {
-              this.quiz!.questions = questions;
-              this.isLoading = false;
-              if (this.currentQuestion?.type === 'vrai-faux' && (!this.currentQuestion.options || this.currentQuestion.options.length === 0)) {
-                this.currentQuestion.options = ['Vrai', 'Faux'];
-              }
-
-            },
-            () => {
-              this.isLoading = false;
-              this.router.navigate(['/quizzes']);
+            // Si l'utilisateur a déjà complété le quiz et qu'il n'est pas rejouable, rediriger
+            if (this.hasCompletedQuiz && !this.canReplay) {
+              this.router.navigate(['/quiz', quizId, 'completed']);
+              return;
             }
-          );
-        } else {
-          this.isLoading = false;
-          this.router.navigate(['/quizzes']);
+
+            // Initialiser le quiz
+            this.initializeQuiz();
+          },
+          error: (error) => {
+            console.error('Erreur lors de la vérification du statut du quiz:', error);
+            this.isLoading = false;
+            // En cas d'erreur, on laisse l'utilisateur continuer
+            this.initializeQuiz();
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement du quiz:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private initializeQuiz(): void {
+    if (!this.quiz) return;
+
+    this.timeRemaining = this.quiz.duration * 60; // Convertir en secondes
+    this.startTimer();
+
+    // Charger les questions créées par l'admin pour ce quiz
+    this.quizService.getQuestionsByQuiz(this.quiz.id).subscribe(
+      (questions: Question[]) => {
+        this.quiz!.questions = questions;
+        this.isLoading = false;
+        if (this.currentQuestion?.type === 'vrai-faux' && (!this.currentQuestion.options || this.currentQuestion.options.length === 0)) {
+          this.currentQuestion.options = ['Vrai', 'Faux'];
         }
+
       },
       () => {
         this.isLoading = false;

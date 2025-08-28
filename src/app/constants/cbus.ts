@@ -4,6 +4,6 @@ export const CBUS = [
     "EES : Electronic Embedded Systems",
     "DET : Digital and Technology",
     "MPE : Mechanical Product Engineering",
-    "CSP ",
+    "CSP : Corporate Service Provider",
     "SGA"
   ];

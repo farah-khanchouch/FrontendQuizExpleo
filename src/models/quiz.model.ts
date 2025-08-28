@@ -10,7 +10,6 @@ export interface User {
   cbu?: string;
 }
 
-
 export interface Quiz {
   id: string;
   _id: string;
@@ -31,9 +30,8 @@ export interface Quiz {
   status: 'draft' | 'active' | 'archived'; // État général du quiz (admin)
   progressStatus?: 'not-started' | 'in-progress' | 'completed'; // État pour un utilisateur
   userStatus?: 'not-started' | 'in-progress' | 'completed'; // État utilisateur
-  
-
- }
+  isReplayable?: boolean;
+}
 
 export interface Question {
   id?: string;
@@ -44,8 +42,8 @@ export interface Question {
   explanation?: string;
   points: number;
   quizId?: string;
-  
 }
+
 export interface BadgeCreateDto {
   name: string;
   description: string;
@@ -54,6 +52,7 @@ export interface BadgeCreateDto {
   criteria: string;
   type: 'achievement' | 'milestone' | 'special';
 }
+
 export interface BadgeUpdateDto {
   name?: string;
   description?: string;

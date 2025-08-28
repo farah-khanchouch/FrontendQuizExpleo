@@ -96,10 +96,32 @@
     </h2>
 
     <form (ngSubmit)="editingBadge ? updateBadge() : createBadge()">
-
-
-
-
+      <div class="form-group">
+        <label class="form-label">Nom du badge</label>
+        <input 
+          type="text" 
+          class="form-input" 
+          [ngModel]="editingBadge ? editingBadge.name : newBadge.name"
+          (ngModelChange)="editingBadge ? (editingBadge.name = $event) : (newBadge.name = $event)"
+          name="name"
+          required
+          placeholder="Ex: Expert JavaScript"
+        >
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea 
+          class="form-textarea" 
+          [ngModel]="editingBadge ? editingBadge.description : newBadge.description"
+          (ngModelChange)="editingBadge ? (editingBadge.description = $event) : (newBadge.description = $event)"
+          name="description"
+          required
+          rows="3"
+          placeholder="Décrivez ce que représente ce badge..."
+        ></textarea>
+      </div>
+  
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Icône</label>

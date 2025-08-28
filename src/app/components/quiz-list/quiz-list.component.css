@@ -93,6 +93,29 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+.btn-disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-disabled:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.quiz-status {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}
 
 /* Buttons */
 .btn {
@@ -152,7 +175,17 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(255, 255, 255, 0.3);
 }
+/* Ajout pour le bouton "Terminé" (non rejouable) */
+.btn-disabled:hover {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
 
+.btn-disabled::before {
+  display: none;
+}
 /* Animations */
 @keyframes slideInUp {
   from {

@@ -27,6 +27,7 @@ export class ResultsComponent implements OnInit {
   timeSpent = 0; // En secondes
   isAnimationComplete = false;
   isSaving = false; // Pour indiquer que la sauvegarde est en cours
+  isReplayable = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -35,7 +36,7 @@ export class ResultsComponent implements OnInit {
     private badgeService: BadgeService,
     private statsService: StatsService, // Service ajouté
     private authService: AuthService    // Service ajouté
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const quizId = this.route.snapshot.params['quizId'];
@@ -45,21 +46,45 @@ export class ResultsComponent implements OnInit {
     this.timeSpent = parseInt(this.route.snapshot.queryParams['time'] || '0');
     this.incorrectAnswers = this.totalQuestions - this.correctAnswers;
     this.scorePercentage = this.totalQuestions > 0 ? Math.round((this.correctAnswers / this.totalQuestions) * 100) : 0;
-  
+
     this.loadQuiz(quizId);
-  
+
     setTimeout(() => {
       this.isAnimationComplete = true;
     }, 1500);
   }
 
   loadQuiz(quizId: string): void {
-    this.quizService.getQuizById(quizId).subscribe((quiz: Quiz | undefined) => {
-      if (quiz) {
+    this.quizService.getQuizById(quizId).subscribe({
+      next: (quiz) => {
         this.quiz = quiz;
+        // Vérifier si le quiz est rejouable
+        this.isReplayable = quiz.isReplayable !== false; // Par défaut true
+
+        // Vérifier si l'utilisateur a déjà complété ce quiz
+        const token = localStorage.getItem('token');
+        if (token) {
+          this.quizService.hasUserCompletedQuiz(quizId).subscribe({
+            next: (result) => {
+              // Si l'utilisateur a déjà complété le quiz et qu'il n'est pas rejouable
+              if (result.completed && !this.isReplayable) {
+                // Ne pas permettre de rejouer
+                this.isReplayable = false;
+              }
+            },
+            error: (error) => {
+              console.error('Erreur lors de la vérification du statut du quiz:', error);
+              // En cas d'erreur, on laisse la possibilité de rejouer
+              this.isReplayable = true;
+            }
+          });
+        }
         this.calculateResults();
         // AJOUT IMPORTANT : Sauvegarder le résultat après avoir chargé le quiz
         this.saveQuizResult(quizId);
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement du quiz:', error);
       }
     });
   }
@@ -102,17 +127,17 @@ export class ResultsComponent implements OnInit {
 
   calculateResults(): void {
     if (!this.quiz) return;
-  
+
     this.scorePercentage = Math.round((this.userScore / this.quiz.points) * 100);
-  
+
     // 1. Calcule les badges front (remplit earnedBadges)
     this.calculateBadges();
-  
+
     // 2. Récupère les badges admin et fusionne
     this.badgeService.getBadges().subscribe((badges: Badge[]) => {
       const accuracy = this.scorePercentage; // précision en %
       const timeSpent = this.timeSpent; // temps en secondes
-  
+
       const adminBadges = badges.filter(badge => {
         if (!badge.isActive) return false;
         if (badge.criteria.startsWith('score>=')) {
@@ -132,7 +157,7 @@ export class ResultsComponent implements OnInit {
         }
         return false;
       });
-  
+
       // Fusionne les deux listes dans earnedBadges
       this.earnedBadges = [
         ...this.earnedBadges, // badges front déjà calculés
@@ -143,7 +168,7 @@ export class ResultsComponent implements OnInit {
 
   calculateBadges(): void {
     this.earnedBadges = [];
-    
+
     // Badge de performance
     if (this.scorePercentage === 100) {
       this.earnedBadges.push({
@@ -217,13 +242,13 @@ export class ResultsComponent implements OnInit {
   }
 
   getEncouragementMessage(): string {
-    if (this.scorePercentage >= 90) 
+    if (this.scorePercentage >= 90)
       return 'Félicitations ! Tu maîtrises parfaitement ce sujet. Ton excellence est remarquable !';
-    if (this.scorePercentage >= 80) 
+    if (this.scorePercentage >= 80)
       return 'Bravo ! Tu as une très bonne compréhension du sujet. Continue comme ça !';
-    if (this.scorePercentage >= 70) 
+    if (this.scorePercentage >= 70)
       return 'Bien joué ! Tu as de bonnes bases. Avec un peu plus de révision, tu seras au top !';
-    if (this.scorePercentage >= 60) 
+    if (this.scorePercentage >= 60)
       return 'Pas mal ! Tu progresses bien. Quelques révisions et tu auras un excellent score !';
     return 'Ne te décourage pas ! Chaque quiz est une opportunité d\'apprendre. Révise et réessaie !';
   }
@@ -269,7 +294,7 @@ export class ResultsComponent implements OnInit {
   getTimeSpent(): string {
     const minutes = Math.floor(this.timeSpent / 60);
     const seconds = this.timeSpent % 60;
-    
+
     if (minutes > 0) {
       return `${minutes} min ${seconds}s`;
     } else {
@@ -288,8 +313,8 @@ export class ResultsComponent implements OnInit {
     const R = (num >> 16) - amt;
     const G = (num >> 8 & 0x00FF) - amt;
     const B = (num & 0x0000FF) - amt;
-    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + 
-      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + 
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
       (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
   }
 
@@ -320,7 +345,7 @@ export class ResultsComponent implements OnInit {
   }
 
   retakeQuiz(): void {
-    if (this.quiz) {
+    if (this.quiz && this.isReplayable) {
       this.router.navigate(['/quiz', this.quiz.id]);
     }
   }
@@ -332,5 +357,14 @@ export class ResultsComponent implements OnInit {
   // NOUVELLE MÉTHODE : Navigation vers les statistiques
   goToStats(): void {
     this.router.navigate(['/stats']);
+  }
+
+  // Méthodes de navigation
+  goToQuizzes(): void {
+    this.router.navigate(['/quizzes']);
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

@@ -22,9 +22,18 @@ export class QuizListComponent implements OnInit {
   editingQuiz: Quiz | null = null;
   showEditModal = false;
   userQuizzes: Quiz[] = [];
-  constructor(private quizService: QuizService, private router: Router, public authService: AuthService) { }
+  
+  // Nouvelle propriété pour stocker les statuts de complétion
+  quizCompletionStatus: { [quizId: string]: { completed: boolean, lastAttempt?: Date } } = {};
+
+  constructor(
+    private quizService: QuizService, 
+    private router: Router, 
+    public authService: AuthService
+  ) { }
+
   ngOnInit() {
-    console.log('INIT QUIZ LIST COMPONENT'); // tout en haut
+    console.log('INIT QUIZ LIST COMPONENT');
 
     const user = this.authService.getCurrentUser();
     console.log('USER:', user);
@@ -41,6 +50,9 @@ export class QuizListComponent implements OnInit {
           );
           console.log('FILTERED:', filtered);
           this.userQuizzes = filtered;
+          
+          // Charger les statuts de complétion pour chaque quiz
+          this.loadQuizCompletionStatuses();
         } else {
           console.log('NO USER OR NO CBU');
           this.userQuizzes = [];
@@ -51,11 +63,78 @@ export class QuizListComponent implements OnInit {
       }
     });
 
-    console.log('END OF ngOnInit'); // tout en bas
+    console.log('END OF ngOnInit');
   }
+
+  // Nouvelle méthode pour charger les statuts de complétion
+  loadQuizCompletionStatuses(): void {
+    this.userQuizzes.forEach(quiz => {
+      const quizId = quiz.id || quiz._id;
+      this.quizService.hasUserCompletedQuiz(quizId).subscribe({
+        next: (status) => {
+          this.quizCompletionStatus[quizId] = status;
+        },
+        error: (err) => {
+          console.error(`Erreur lors de la vérification du statut pour le quiz ${quizId}:`, err);
+          // En cas d'erreur, on considère que le quiz n'a pas été complété
+          this.quizCompletionStatus[quizId] = { completed: false };
+        }
+      });
+    });
+  }
+
+  // Nouvelle méthode pour déterminer le texte du bouton
+  getButtonText(quiz: Quiz): string {
+    const quizId = quiz.id || quiz._id;
+    const completionStatus = this.quizCompletionStatus[quizId];
+
+    if (!completionStatus || !completionStatus.completed) {
+      return 'Commencer';
+    }
+
+    // Si le quiz est complété
+    if (quiz.isReplayable) {
+      return 'Refaire';
+    } else {
+      return 'Terminé';
+    }
+  }
+
+  // Nouvelle méthode pour déterminer si le bouton doit être cliquable
+  isButtonClickable(quiz: Quiz): boolean {
+    const quizId = quiz.id || quiz._id;
+    const completionStatus = this.quizCompletionStatus[quizId];
+
+    // Si pas encore complété, toujours cliquable
+    if (!completionStatus || !completionStatus.completed) {
+      return true;
+    }
+
+    // Si complété, cliquable seulement si rejouable
+    return quiz.isReplayable ?? true; // Par défaut true si non défini
+  }
+
+  // Nouvelle méthode pour déterminer la classe CSS du bouton
+  getButtonClass(quiz: Quiz): string {
+    const quizId = quiz.id || quiz._id;
+    const completionStatus = this.quizCompletionStatus[quizId];
+
+    if (!completionStatus || !completionStatus.completed) {
+      return 'btn btn-primary';
+    }
+
+    // Si complété
+    if (quiz.isReplayable) {
+      return 'btn btn-secondary'; // Style pour "Refaire"
+    } else {
+      return 'btn btn-disabled'; // Style pour "Terminé" (non cliquable)
+    }
+  }
+
   getQuizQuestionsCount(quiz: Quiz): number {
     return Array.isArray(quiz.questions) ? quiz.questions.length : (quiz.questions as any || 0);
   }
+
   loadQuizzes(): void {
     this.isLoading = true;
     this.quizService.getQuizzes().subscribe({
@@ -71,7 +150,6 @@ export class QuizListComponent implements OnInit {
     });
   }
 
-
   filterByTheme(theme: string): void {
     this.selectedTheme = theme;
     if (theme === '') {
@@ -84,10 +162,12 @@ export class QuizListComponent implements OnInit {
   getQuizCountByTheme(theme: string): number {
     return this.quizzes.filter(quiz => quiz.theme === theme).length;
   }
+
   navigateToQuiz(quizId: string): void {
-    this.router.navigate(['/quiz', quizId]);
+    // Vérifier si la navigation est autorisée avant de naviguer
+    const quiz = this.userQuizzes.find(q => (q.id || q._id) === quizId);
+    if (quiz && this.isButtonClickable(quiz)) {
+      this.router.navigate(['/quiz', quizId]);
+    }
   }
-
-
-
 }

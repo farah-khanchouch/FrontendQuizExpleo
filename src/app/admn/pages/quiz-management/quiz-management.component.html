@@ -248,6 +248,17 @@
               </select>
             </div>
           </div>
+
+          <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="isReplayable"
+              [ngModel]="editingQuiz ? editingQuiz.isReplayable : newQuiz.isReplayable"
+              (ngModelChange)="onReplayableChange($event)">
+            <label class="form-check-label" for="isReplayable">Autoriser les utilisateurs à refaire ce quiz</label>
+            <small class="form-text text-muted">
+              Si coché, les utilisateurs pourront refaire ce quiz plusieurs fois. Sinon, ils ne pourront le passer
+              qu'une seule fois.
+            </small>
+          </div>
         </div>
 
         <div class="form-group">
@@ -275,7 +286,7 @@
 
           </div>
 
-          
+
         </div>
 
         <!-- Actions du modal -->

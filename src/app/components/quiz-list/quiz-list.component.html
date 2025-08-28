@@ -17,10 +17,13 @@
     </div>
     <img *ngIf="quiz.imageUrl" [src]="'https://quizonexpleo.up.railway.app' + quiz.imageUrl" alt="Quiz image"
       style="width:120px;" />
-    <button class="btn" [ngClass]="quiz.progressStatus === 'completed' ? 'btn-secondary' : 'btn-primary'"
+    
+    <!-- Nouveau bouton avec logique conditionnelle -->
+    <button 
+      [ngClass]="getButtonClass(quiz)"
+      [disabled]="!isButtonClickable(quiz)"
       (click)="navigateToQuiz(quiz.id)">
-      {{ quiz.progressStatus === 'completed' ? 'Refaire' : 'Commencer' }}
+      {{ getButtonText(quiz) }}
     </button>
   </div>
-
 </div>

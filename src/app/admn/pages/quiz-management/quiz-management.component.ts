@@ -41,7 +41,8 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     badge: '',              // Nom du badge à attribuer
     badgeClass: '',
     cbus: [] as string[],       // Classe CSS ou identifiant du badge
-    status: 'draft' as 'active' | 'draft' | 'archived' // Statut du quiz (menu déroulant ou bouton radio dans le formulaire)
+    status: 'draft' as 'active' | 'draft' | 'archived', // Statut du quiz (menu déroulant ou bouton radio dans le formulaire)
+    isReplayable: true // Valeur par défaut à true
   };
 
   cbusList = CBUS;
@@ -240,7 +241,8 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
       badge: '',
       badgeClass: '',
       cbus: [] as string[],
-      status: 'draft'
+      status: 'draft',
+      isReplayable: true
     };
   }
 
@@ -281,7 +283,20 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
   }
 
   editQuiz(quiz: Quiz) {
-    this.editingQuiz = { ...quiz };
+    this.editingQuiz = quiz;
+    this.newQuiz = {
+      title: quiz.title,
+      description: quiz.description || '',
+      theme: quiz.theme,
+      duration: quiz.duration,
+      points: quiz.points,
+      imageUrl: quiz.imageUrl || '',
+      badge: quiz.badge || '',
+      badgeClass: quiz.badgeClass || '',
+      cbus: [...quiz.cbus],
+      status: quiz.status,
+      isReplayable: quiz.isReplayable ?? true // Valeur par défaut si non définie
+    };
     this.selectedCBUs = quiz.cbus ? [...quiz.cbus] : [];
     this.showCreateModal = true;
     this.activeMenuId = null; // Fermer le menu dropdown
@@ -291,6 +306,7 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
     if (this.editingQuiz && this.editingQuiz.id) {
       this.isLoading = true;
       this.editingQuiz.cbus = this.selectedCBUs;
+      this.editingQuiz.isReplayable = this.newQuiz.isReplayable;
       const updateSubscription = this.quizService.updateQuiz(this.editingQuiz.id, this.editingQuiz).subscribe({
         next: (updatedQuiz) => {
           console.log('Quiz mis à jour:', updatedQuiz);
@@ -480,5 +496,14 @@ export class QuizManagementComponent implements OnInit, OnDestroy {
 
   clearError() {
     this.error = null;
+  }
+
+  // Méthode pour gérer le changement d'état de la rejouabilité
+  onReplayableChange(value: boolean): void {
+    if (this.editingQuiz) {
+      this.editingQuiz.isReplayable = value;
+    } else {
+      this.newQuiz.isReplayable = value;
+    }
   }
 }

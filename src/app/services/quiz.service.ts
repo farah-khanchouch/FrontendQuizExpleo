@@ -717,4 +717,21 @@ export class QuizService {
     this.loadingSubject.complete();
     this.errorSubject.complete();
   }
+
+  // Vérifier si l'utilisateur a déjà complété un quiz spécifique
+  hasUserCompletedQuiz(quizId: string): Observable<{ completed: boolean, lastAttempt?: Date }> {
+    const url = `${this.baseUrl}/${quizId}/completion-status`;
+    return this.http.get<{ completed: boolean, lastAttempt?: string }>(url, { headers: this.getAuthHeaders() }).pipe(
+      map(response => ({
+        completed: response.completed,
+        lastAttempt: response.lastAttempt ? new Date(response.lastAttempt) : undefined
+      })),
+      catchError(error => {
+        console.error('Erreur lors de la vérification du statut de complétion:', error);
+        // En cas d'erreur, on considère que le quiz n'a pas été complété
+        return of({ completed: false });
+      })
+    );
+  }
+ 
 }

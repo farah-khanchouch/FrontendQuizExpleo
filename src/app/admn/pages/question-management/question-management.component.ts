@@ -274,7 +274,6 @@ export class QuestionManagementComponent implements OnInit {
     this.modificationsPendantes = true;
 
     this.closeModal();
-    alert('Nouvelle question ajoutée localement. Cliquez sur "Synchroniser" pour sauvegarder.');
   }
 
   // Méthode de validation améliorée
@@ -389,7 +388,6 @@ export class QuestionManagementComponent implements OnInit {
     if (!this.modificationsPendantes) {
       // Faire une synchronisation simple (rechargement depuis serveur)
       this.loadQuestionsFromServer();
-      alert('Aucune modification à synchroniser. Données rechargées depuis le serveur.');
       return;
     }
 
@@ -548,7 +546,7 @@ export class QuestionManagementComponent implements OnInit {
       let message = '';
 
       if (operationsEchouees === 0) {
-        message = `✅ Synchronisation réussie! ${operationsReussies} opération(s) effectuée(s).`;
+        message = `✅ Synchronisation réussie! `;
         console.log('🎉 Synchronisation 100% réussie!');
       } else if (operationsReussies > 0) {
         message = `⚠️ Synchronisation partielle: ${operationsReussies} réussie(s), ${operationsEchouees} échouée(s).`;
